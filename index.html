@@ -171,7 +171,9 @@ button{font:inherit;color:inherit}
 .pbar i.on{background:var(--accent)}
 .pbar i.cur{background:var(--peach)}
 .sets{display:flex;flex-direction:column;gap:8px}
-.set{display:grid;grid-template-columns:34px 1fr 1fr 52px;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px}
+.kg{display:grid;grid-template-columns:30px 1fr 30px;gap:3px;align-items:center}
+.kg button{height:40px;border:1px solid var(--line);background:var(--surface-2);border-radius:9px;font:800 18px var(--display);cursor:pointer;padding:0}
+.set{display:grid;grid-template-columns:30px .8fr 1.5fr 50px;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px}
 .set.done{background:var(--accent-soft);border-color:transparent}
 .set label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em}
 .set input{width:100%;min-width:0;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:10px;padding:8px;font:700 18px var(--display);text-align:center}
@@ -845,7 +847,7 @@ function tabsBar(){
 function exRow(it,i){
   const e = EX[it.ex]; const ns = Array.isArray(it.sets) ? it.sets.length : it.sets;
   const dose = it.unit==="sec" ? (ns>1?ns+" × ":"")+(it.lo>=120?Math.round(it.lo/60)+" min":it.lo+" s") : ns+" × "+it.lo+(it.hi&&it.hi!==it.lo?"–"+it.hi:"");
-  return '<li><button class="rowbtn" data-act="tuto" data-v="'+it.ex+'" aria-label="Voir le tuto : '+esc(e.n)+'">'+thumb(it.ex, it.main)+'<div class="grow"><div style="font-weight:600">'+esc(e.n)+'</div><div class="tiny muted">'+esc(GROUP_LABEL[e.g])+(it.main?" · exercice repère":"")+' · voir le tuto</div></div><span class="pill num">'+dose+'</span></button></li>';
+  return '<li><button class="rowbtn" data-act="tuto" data-v="'+it.ex+'" aria-label="Voir le tuto : '+esc(e.n)+'">'+thumb(it.ex, it.main)+'<div class="grow"><div style="font-weight:600">'+esc(e.n)+'</div><div class="tiny muted">'+esc(GROUP_LABEL[e.g])+(it.main?" · exercice repère":"")+' · voir le tuto</div>'+(e.w && it.unit!=="sec" ? (()=>{ const L=S.lastByEx[it.ex]; const kg = L && (L.next!=null?L.next:L.weight); return '<div class="tiny" style="font-weight:700;color:var(--accent)">'+(kg?"Charge : "+kg+" kg":"Charge : à noter à la 1re séance")+'</div>'; })() : '')+'</div><span class="pill num">'+dose+'</span></button></li>';
 }
 function thumb(id, main){ const A = ANIMS[EX_ANIM[id]]; return '<span class="thumb'+(main?" main":"")+'">'+(A?FIG.svg(A,1,""):"")+'</span>'; }
 const mainItems = s => s.items.filter(it=>!it.phase || it.phase==="main");
@@ -1125,7 +1127,7 @@ function playerHTML(){
           +'<button class="check" data-act="done" data-k="'+k+'" aria-label="Série '+(k+1)+(s.done?" faite":" à valider")+'"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button></div>';
         return '<div class="set'+(s.done?" done":"")+'"><span class="n">'+(k+1)+'</span>'
         +'<div><label for="r'+k+'">'+unitLabel+'</label><input id="r'+k+'" type="number" inputmode="numeric" value="'+esc(s.reps)+'" data-act="setval" data-k="'+k+'" data-f="reps"></div>'
-        +(e.w?'<div><label for="w'+k+'">Kg</label><input id="w'+k+'" type="number" inputmode="decimal" step="0.5" value="'+esc(s.weight)+'" data-act="setval" data-k="'+k+'" data-f="weight"></div>':'<div class="tiny muted" style="align-self:center">Poids du corps</div>')
+        +(e.w?'<div><label for="w'+k+'">Charge (kg)</label><div class="kg"><button data-act="kgstep" data-k="'+k+'" data-v="-1" aria-label="Moins de charge">−</button><input id="w'+k+'" type="number" inputmode="decimal" step="0.5" placeholder="kg" value="'+esc(s.weight)+'" data-act="setval" data-k="'+k+'" data-f="weight"><button data-act="kgstep" data-k="'+k+'" data-v="1" aria-label="Plus de charge">+</button></div></div>':'<div class="tiny muted" style="align-self:center">Poids du corps</div>')
         +'<button class="check" data-act="done" data-k="'+k+'" aria-label="Série '+(k+1)+(s.done?" faite":" à valider")+'"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button></div>'; }).join("")+'</div>'
       +(a.type==="MOB"||a.type==="STR"?'':'<div class="row wrap"><button class="btn sm line" data-act="swap">Remplacer l\'exercice</button></div>')
       +'<div class="row"><button class="btn ghost grow" data-act="go" data-v="'+(a.step-1)+'"'+(a.step===0?" disabled":"")+'>Précédent</button><button class="btn grow" data-act="go" data-v="'+nextIdx+'">'+(nextIdx>=n?"Terminer":nextIsCool?"Retour au calme":"Exercice suivant")+'</button></div>';
@@ -1326,6 +1328,10 @@ document.addEventListener("click", ev=>{
   switch(act){
     case "tuto": sheet={tuto:v}; renderLayer(); break;
     case "chrono": startChrono(+el.dataset.k); break;
+    case "kgstep": { const it=a.items[a.step], k=+el.dataset.k, e=EX[it.ex]; const inc = e.e.includes("halteres") && !e.e.includes("machines") ? 1 : 2.5;
+      const cur = parseFloat(it.sets[k].weight)||0; const nv = Math.max(0, Math.round((cur + inc*(+v))*2)/2);
+      for (let j=k;j<it.sets.length;j++){ if (j===k || !it.sets[j].done){ it.sets[j].weight = nv; const o=$("#w"+j); if (o) o.value = nv; } if (j===k) continue; }
+      save(); } break;
     case "breath": view.breath={id:v,start:0,done:false}; renderLayer(); break;
     case "breathgo": view.breath.start=Date.now(); renderLayer(); cancelAnimationFrame(breathRAF); breathTick(); break;
     case "breathstop": view.breath.start=0; cancelAnimationFrame(breathRAF); renderLayer(); break;
@@ -1377,7 +1383,9 @@ document.addEventListener("click", ev=>{
 document.addEventListener("input", ev=>{
   const el = ev.target;
   if (el.dataset.f && !el.dataset.act && view.draft){ obDraft()[el.dataset.f] = el.value; return; }
-  if (el.dataset.act==="setval" && S.active){ const it=S.active.items[S.active.step]; it.sets[+el.dataset.k][el.dataset.f] = el.value; save(); }
+  if (el.dataset.act==="setval" && S.active){ const it=S.active.items[S.active.step], k=+el.dataset.k, f=el.dataset.f; it.sets[k][f] = el.value;
+    if (f==="weight") for (let j=k+1;j<it.sets.length;j++){ if (!it.sets[j].done){ it.sets[j].weight = el.value; const o=$("#w"+j); if (o) o.value = el.value; } }
+    save(); }
   if (el.dataset.act==="rpe" && S.active){ S.active.rpe=+el.value; const o=$("#rpev"); if(o) o.textContent=el.value; save(); }
 });
 
