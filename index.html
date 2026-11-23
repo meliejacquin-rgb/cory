@@ -239,7 +239,8 @@ input[type=text],input[type=number]{font:inherit}
 .hero-ob img{width:220px;height:300px;object-fit:cover;object-position:top;border-radius:120px 120px 24px 24px}
 .note{font-size:13px;color:var(--muted);background:var(--surface);border-radius:12px;padding:10px 12px;border:1px solid var(--line)}
 .fig{width:100%;height:auto;display:block}
-.fig .limb,.fig .torso{stroke:var(--fg);stroke-width:6.5;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.fig .limb,.fig .torso{stroke:var(--fg);stroke-width:10;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.fig .torso{stroke-width:15}
 .fig .far{stroke:var(--peach)}
 .fig .head{fill:var(--fg)}
 .fig .floor{stroke:var(--line);stroke-width:2}
@@ -266,6 +267,40 @@ input[type=text],input[type=number]{font:inherit}
 .blabel{position:absolute;inset:0;display:grid;place-items:center;font:800 26px var(--display);color:var(--fg)}
 .wb{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .wb .alt{display:flex;flex-direction:column;gap:2px}
+.medal{display:inline-block;font:800 10px/1 var(--display);letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--m);border-radius:99px;padding:3px 7px;vertical-align:middle;margin-left:6px}
+.medal.big{font-size:12px;padding:4px 9px}
+.musc{display:flex;gap:6px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px}
+.musc svg{width:52px;height:104px;flex-shrink:0}
+.musc .mb{fill:var(--surface-2)}
+.musc .m0{fill:var(--line)}
+.musc .ms{fill:var(--peach)}
+.musc .mp{fill:var(--accent)}
+.musc i.lg{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:-1px;margin-left:6px}
+.musc i.mp{background:var(--accent)} .musc i.ms{background:var(--peach)}
+.brief .musc{background:var(--surface-2);border:0;align-items:flex-start}
+.brief .musc .mb{fill:var(--surface)}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.steps li{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.steps .sn{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:800 13px var(--display)}
+.fig .top{stroke:var(--accent);stroke-width:17;stroke-linecap:round;fill:none}
+.fig .hair{fill:var(--fg)}
+.streak{display:flex;gap:14px;align-items:center}
+.streak .big{font:800 40px/1 var(--display);color:var(--accent);min-width:44px;text-align:center}
+.chest{display:flex;gap:14px;align-items:center;background:linear-gradient(120deg,var(--accent-soft),var(--surface));border:1.5px dashed var(--accent);border-radius:var(--r);padding:14px;color:var(--fg);font:inherit}
+.chest svg{width:52px;height:52px;flex-shrink:0}
+.tier{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
+.tier div{height:10px;border-radius:4px;background:var(--surface-2)}
+.tier div.on{background:var(--accent)}
+.rlist{display:flex;flex-direction:column}
+.rlist div{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;padding:7px 0;border-top:1px solid var(--line)}
+.rlist div.on{font-weight:700}
+.rlist div:not(.on){color:var(--muted)}
+.frame{border-radius:50%;padding:3px;display:inline-block;flex-shrink:0}
+.quote{font-style:italic;font-size:15px;border-left:3px solid var(--accent);padding-left:10px}
+.tip{display:flex;gap:12px;align-items:flex-start}
+.pausecard{border:1.5px solid var(--accent)}
+.panel.center{align-items:center;text-align:center}
+
 .warnbox{background:var(--accent-soft);border-radius:14px;padding:12px 14px;font-size:14.5px}
 </style>
 
@@ -332,8 +367,10 @@ const FIG = (function(){
     const q = solve(P);
     const far = seg(q.hip,q.kn2,"limb far")+seg(q.kn2,q.an2,"limb far")+seg(q.an2,q.toe2,"limb far foot")+seg(q.sho,q.el2,"limb far")+seg(q.el2,q.ha2,"limb far");
     const near = seg(q.hip,q.kn1,"limb")+seg(q.kn1,q.an1,"limb")+seg(q.an1,q.toe1,"limb foot")+seg(q.sho,q.el1,"limb")+seg(q.el1,q.ha1,"limb");
-    const torso = seg(q.hip,q.neck,"torso");
-    const head = '<circle class="head" cx="'+q.head.x.toFixed(1)+'" cy="'+q.head.y.toFixed(1)+'" r="'+L.head+'"/>';
+    const lp = (a,b,t)=>({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t});
+    const torso = seg(q.hip,lp(q.hip,q.neck,.4),"torso")+seg(lp(q.hip,q.neck,.36),lp(q.hip,q.neck,.88),"top");
+    const hx = q.head.x-q.neck.x, hy = q.head.y-q.neck.y, hl = Math.hypot(hx,hy)||1, px = hy/hl, py = -hx/hl;
+    const head = '<circle class="hair" cx="'+(q.head.x-px*8.5+hx/hl*1.5).toFixed(1)+'" cy="'+(q.head.y-py*8.5+hy/hl*1.5).toFixed(1)+'" r="5.2"/><circle class="head" cx="'+q.head.x.toFixed(1)+'" cy="'+q.head.y.toFixed(1)+'" r="'+L.head+'"/>';
     return propsSVG(A.props, q) + far + torso + head + near + handSVG(A.load, q);
   }
   function frontSVG(P, A){
@@ -348,7 +385,7 @@ const FIG = (function(){
         if (A.props && A.props.some(x=>x[0]==="kneepad")) s += '<circle class="eq" cx="'+(kn.x+sd*7).toFixed(1)+'" cy="'+(kn.y+8).toFixed(1)+'" r="5"/>'; }
       else { const kn = go(hp, L.H, sd*p.l); const an = go(kn, L.S, sd*p.l*0.6); const dy = FLOOR-4-an.y; s += seg({x:hp.x,y:hp.y+dy*0},{x:kn.x,y:kn.y},"limb")+seg(kn,an,"limb")+seg(an,{x:an.x+sd*7,y:an.y},"limb foot"); }
     });
-    s += '<path class="torso" d="M'+(cx-hipW)+' '+hipY+' L'+(cx-shW+3)+' '+shY+' L'+(cx+shW-3)+' '+shY+' L'+(cx+hipW)+' '+hipY+'" fill="none"/>';
+    s += '<path d="M'+(cx-hipW-2)+' '+(hipY+4)+' L'+(cx-hipW+1)+' '+(hipY-16)+' L'+(cx-shW+4)+' '+(shY+2)+' L'+(cx+shW-4)+' '+(shY+2)+' L'+(cx+hipW-1)+' '+(hipY-16)+' L'+(cx+hipW+2)+' '+(hipY+4)+' Z" style="fill:var(--fg)"/><path d="M'+(cx-hipW+1)+' '+(hipY-14)+' L'+(cx-shW+4)+' '+(shY+2)+' L'+(cx+shW-4)+' '+(shY+2)+' L'+(cx+hipW-1)+' '+(hipY-14)+' Z" style="fill:var(--accent);stroke:var(--accent);stroke-width:5;stroke-linejoin:round"/>';
     s += '<circle class="head" cx="'+cx+'" cy="'+(shY-17)+'" r="'+L.head+'"/>';
     [-1,1].forEach(sd=>{
       const sh = {x:cx+sd*shW, y:shY+3};
@@ -620,7 +657,7 @@ const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
 
 /* ---------- État et sauvegarde ---------- */
 const KEY = "cory.v1";
-function blank(){ return {v:1,updatedAt:0,profile:null,program:null,logs:[],xp:[],lastByEx:{},postponed:{},swaps:{},badges:{},seenLevel:1,active:null,settings:{game:true,reduce:false,theme:"terra"}}; }
+function blank(){ return {v:1,updatedAt:0,profile:null,program:null,logs:[],xp:[],lastByEx:{},postponed:{},swaps:{},badges:{},chests:{},breaks:[],seenLevel:1,active:null,settings:{game:true,reduce:false,theme:"terra",title:null,frame:null}}; }
 let S = blank();
 try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(blank(), JSON.parse(raw)); } catch(e) {}
 let remote = null, syncState = "local", saveTimer = null;
@@ -686,10 +723,14 @@ const BADGES = [
  {id:"streak2",n:"Deux semaines",d:"Objectif tenu deux semaines de suite"},
  {id:"listen5",n:"À l'écoute",d:"Remplir 5 retours de séance"},
  {id:"recup",n:"Récup' assumée",d:"Faire une séance de mobilité"},
- {id:"explore",n:"Exploratrice",d:"Essayer 12 exercices différents"},
+ {id:"explore",n:"Curiosité",d:"Essayer 12 exercices différents"},
  {id:"up",n:"Ça monte",d:"Première charge augmentée par CORY"},
  {id:"ten",n:"Cap des 10",d:"10 séances terminées"},
  {id:"zen",n:"Souffle zen",d:"Faire 5 séances de respiration"},
+ {id:"pr1",n:"Record battu",d:"Battre un de tes records"},
+ {id:"gold",n:"Maîtrise or",d:"Atteindre l'or sur un exercice"},
+ {id:"streak4",n:"Un mois solide",d:"Tenir 4 semaines d'affilée"},
+ {id:"phenix",n:"Phénix",d:"Reprendre après une pause"},
  {id:"lvl5",n:"Niveau 5",d:"Atteindre le niveau 5"}];
 function badgeIcon(i,on){
   const shapes=['<circle cx="24" cy="24" r="17"/>','<path d="M24 6l16 9v18l-16 9-16-9V15z"/>','<rect x="8" y="8" width="32" height="32" rx="9" transform="rotate(45 24 24)"/>'];
@@ -710,12 +751,326 @@ function checkBadges(){
   for (let i=1;i<wk.length;i++) if (dk(addDays(parseDk(wk[i-1]),7))===wk[i]) give("streak2");
   if (Object.values(S.lastByEx).some(v=>v.raised)) give("up");
   if ((S.breaths||[]).length>=5) give("zen");
+  if ((S.prsTotal||0)>=1) give("pr1");
+  if (Object.keys(S.lastByEx).some(id=>EX[id] && masteryTier(masteryPoints(id))>=2)) give("gold");
+  if (S.profile && S.program && streakInfo().streak>=4) give("streak4");
+  if ((S.breaks||[]).some(b=>b.to) && S.logs.some(l=>(S.breaks||[]).some(b=>b.to && l.date>b.to))) give("phenix");
   if (levelOf(totalXP())>=5) give("lvl5");
   return got;
 }
 
+/* ---------- Profil : accords, charges de départ, calories ---------- */
+function G(f, m, n){ const pr = (typeof view!=="undefined" && view.draft) || S.profile; const s = pr && pr.sex; return s==="h" ? m : s==="f" ? f : (n!=null ? n : f); }
+// Ratio indicatif charge/poids de corps pour une débutante (femme). Multiplié selon le sexe et le niveau.
+const START_RATIO = {presse:.8,hack:.35,squat:.35,goblet:.14,rdlh:.12,rdlb:.35,hipb:.5,hipm:.5,abduc:.35,kick:.06,fentes:.08,bulgare:.06,legext:.25,legcurl:.2,mollm:.4,mollh:.12,
+  chestp:.25,dch:.09,dcb:.3,shoulderm:.15,milih:.06,milib:.2,pecdeck:.2,flypoulie:.06,elevh:.03,elevp:.03,facepull:.15,oiseau:.03,revdeck:.15,triceps:.12,frontal:.05,curlh:.06,curlp:.1,curlb:.18,
+  tirvert:.35,tracassist:.4,rowp:.3,rowm:.3,rowh:.12,rowb:.3,pallof:.08,crunchp:.2};
+function startLoad(id){
+  const p = S.profile, bw = parseFloat(p && p.weight); const r = START_RATIO[id];
+  if (!r || !bw || bw < 30 || bw > 250) return null;
+  let k = r * (p.sex==="h" ? 1.4 : 1) * (p.level===1 ? 1 : p.level===2 ? 1.3 : 1.6);
+  if (id==="tracassist") k = r; // contrepoids d'aide : plus lourd = plus facile
+  const inc = EX[id].e.includes("halteres") && !EX[id].e.includes("machines") ? 1 : 2.5;
+  return Math.max(inc, Math.round(bw*k/inc)*inc);
+}
+function kcalOf(log){ const bw = parseFloat(S.profile.weight); if (!bw) return null; const met = (log.type==="MOB"||log.type==="STR") ? 2.5 : 5; return Math.round(met*bw*(log.duration||0)/60); }
+
+/* ---------- Maîtrise par exercice ---------- */
+const MASTERY = [[3,"Bronze","#B07B4F"],[8,"Argent","#8E8E93"],[15,"Or","#C9A227"],[25,"Diamant","#6FA8C9"]];
+function masteryPoints(id){
+  let n = 0; S.logs.forEach(l=>{ if (l.items.some(it=>it.ex===id && it.sets.some(s=>s.done))) n++; });
+  return n + 2*((S.lastByEx[id]||{}).prs||0);
+}
+function masteryTier(pts){ let t = -1; MASTERY.forEach((m,i)=>{ if (pts>=m[0]) t=i; }); return t; }
+function medal(id, big){
+  const t = masteryTier(masteryPoints(id)); if (t<0) return "";
+  const m = MASTERY[t];
+  return '<span class="medal'+(big?" big":"")+'" style="--m:'+m[2]+'" title="Maîtrise '+m[1]+'">'+m[1]+'</span>';
+}
+
+/* ---------- Série de semaines et jokers ---------- */
+function weekMet(wk){ const g = weekGoal(wk); return g>0 && weekLogs(wk).length >= g; }
+function streakInfo(){
+  if (!S.program) return {streak:0, jokers:0, used:0};
+  let streak=0, jokers=0, used=0, metCount=0;
+  const cur = weekKey(); let d = monday(parseDk(S.program.start));
+  while (dk(d) < cur){
+    if (weekMet(dk(d))){ streak++; metCount++; if (metCount%4===0) jokers = Math.min(2, jokers+1); }
+    else if (pausedDaysIn(d,7)>0){ /* semaine en pause : gelée */ }
+    else if (jokers>0){ jokers--; used++; }
+    else streak = 0;
+    d = addDays(d,7);
+  }
+  if (weekMet(cur)) streak++;
+  return {streak, jokers, used};
+}
+
+/* ---------- Récompenses cosmétiques ---------- */
+const TITLES = {racines:"Racines",force:"Force tranquille",acier:"Mental d'acier",poulies:"Reine des poulies",souffle:"Souffle zen",arc:"Arc complet",aube:"Lève-tôt",constance:"Constance",record:"Briseuse de records",phenix:"Phénix"};
+const TITLE_LABEL = id => ({reguliere:G("Régulière","Régulier","Régulier·e"),poulies:G("Reine des poulies","Roi des poulies","Pro des poulies"),record:G("Briseuse de records","Briseur de records","Briseur·se de records")})[id] || TITLES[id] || id;
+const FRAMES = {peche:{n:"Pêche",c:"#C9A895"},terre:{n:"Terre cuite",c:"#B5523B"},espresso:{n:"Espresso",c:"#3B261D"},arc:{n:"Arc évolutif",c:"conic-gradient(#B5523B,#E4BCA9,#B5523B)"},or:{n:"Or",c:"conic-gradient(#C9A227,#F3E2A0,#C9A227)"}};
+const QUOTES = {
+ q1:"Le meilleur entraînement, c'est celui que tu fais vraiment.",
+ q2:"Tu n'as pas besoin d'être parfaite, juste régulière.",
+ q3:"Une séance courte vaut mieux qu'une séance reportée.",
+ q4:"Tes muscles grandissent pendant le repos, pas pendant la séance.",
+ q5:"Chaque répétition propre compte double.",
+ q6:"Le progrès, c'est souvent invisible avant d'être évident.",
+ q7:"Écouter ton corps, c'est aussi s'entraîner.",
+ q8:"On ne compare qu'avec toi d'hier.",
+ q9:"Respire, pousse, recommence."};
+const quoteText = id => { const t = QUOTES[id]||""; return S.profile && S.profile.sex==="h" ? t.replace("parfaite","parfait").replace("régulière","régulier") : t; };
+const lvlLabel = l => l.id===1 ? G("Débutante","Débutant","Débutant·e") : l.id===3 ? G("Confirmée","Confirmé","Confirmé·e") : l.label;
+const SEASON_REWARDS = [
+ {t:"title",id:"racines"},{t:"frame",id:"peche"},{t:"quote",id:"q1"},{t:"theme",id:"argile"},{t:"frame",id:"terre"},
+ {t:"title",id:"force"},{t:"theme",id:"sauge"},{t:"frame",id:"arc"},{t:"quote",id:"q9"},{t:"title",id:"arc"}];
+const SEASON_BASE = [150,350,600,900,1250,1650,2100,2600,3150,3750];
+function seasonThresholds(){ const f = clamp(S.profile.days.length/3, .67, 1.4); return SEASON_BASE.map(x=>Math.round(x*f*0.8/50)*50); }
+function seasonXP(){ const sStart = S.program ? parseDk(S.program.start) : new Date(); return S.xp.filter(x=>parseDk(x.date)>=sStart).reduce((s,x)=>s+x.amount,0); }
+const CHEST_POOL = [{t:"title",id:"reguliere"},{t:"title",id:"acier"},{t:"title",id:"poulies"},{t:"title",id:"aube"},{t:"title",id:"constance"},{t:"title",id:"phenix"},
+ {t:"frame",id:"espresso"},{t:"quote",id:"q2"},{t:"quote",id:"q3"},{t:"quote",id:"q4"},{t:"quote",id:"q5"},{t:"quote",id:"q6"},{t:"quote",id:"q7"},{t:"quote",id:"q8"}];
+function rewardLabel(r){ if (!r) return ""; if (r.t==="title") return "Titre « "+TITLE_LABEL(r.id)+" »"; if (r.t==="frame") return "Cadre "+FRAMES[r.id].n; if (r.t==="theme") return "Thème "+THEMES.find(x=>x.id===r.id).n; if (r.t==="quote") return "Phrase de CORY"; if (r.t==="xp") return "+"+r.n+" XP bonus"; return ""; }
+function inventory(){
+  const inv = {title:new Set(), frame:new Set(), theme:new Set(["terra"]), quote:new Set()};
+  const L = levelOf(totalXP()); THEMES.forEach(t=>{ if (L>=t.l) inv.theme.add(t.id); });
+  const sx = seasonXP(); seasonThresholds().forEach((n,i)=>{ if (sx>=n){ const r = SEASON_REWARDS[i]; inv[r.t].add(r.id); } });
+  Object.values(S.chests||{}).forEach(r=>{ if (inv[r.t]) inv[r.t].add(r.id); });
+  if ((S.prsTotal||0)>=1) inv.title.add("record");
+  if ((S.breaths||[]).length>=5) inv.title.add("souffle");
+  if (S.badges.lvl5) inv.frame.add("or");
+  if ((S.breaks||[]).some(b=>b.to)) inv.title.add("phenix");
+  return inv;
+}
+function openChest(wk){
+  if (S.chests[wk]) return S.chests[wk];
+  const inv = inventory();
+  const left = CHEST_POOL.filter(r=>!inv[r.t].has(r.id));
+  let seed = 0; for (const ch of wk) seed = (seed*31 + ch.charCodeAt(0)) >>> 0;
+  const r = left.length ? left[seed % left.length] : {t:"xp", n:50};
+  S.chests[wk] = r;
+  if (r.t==="xp") award("chest-"+wk, 50, "Coffre", false);
+  save(true);
+  return r;
+}
+
+/* ---------- Défi du mois ---------- */
+const MONTHS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+function monthChallenges(){
+  const now = new Date(), mk = now.getFullYear()+"-"+pad(now.getMonth()+1);
+  const inMonth = l => l.date.slice(0,7)===mk;
+  const dim = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+  const pz = pausedDaysIn(new Date(now.getFullYear(), now.getMonth(), 1), dim);
+  const target = Math.max(2, Math.round(Math.max(6, S.profile.days.length*4 - 2) * (1 - pz/dim)));
+  const n = S.logs.filter(l=>inMonth(l) && l.type!=="MOB" && l.type!=="STR" && l.completed).length;
+  const prs = (S.prLog||[]).filter(d=>d.slice(0,7)===mk).length;
+  return {mk, label: MONTHS[now.getMonth()], list:[{id:"msess",t:target+" séances en "+MONTHS[now.getMonth()],p:n,of:target,xp:150},{id:"mpr",t:"Battre un record ce mois-ci",p:prs,of:1,xp:100}]};
+}
+function settleMonth(){ const m = monthChallenges(); let g = 0; m.list.forEach(c=>{ if (c.p>=c.of) g += award(c.id+"-"+m.mk, c.xp, "Défi du mois", false); }); return g; }
+
+/* ---------- Conseils de CORY ---------- */
+const TIPS = [
+ "Bois un grand verre d'eau avant ta séance : même une légère déshydratation fait baisser la performance.",
+ "Note tes charges : c'est le seul moyen de savoir si tu progresses vraiment.",
+ "Garde 2 à 3 répétitions en réserve sur la plupart des séries. Pas besoin d'aller à l'échec pour progresser.",
+ "Dors 7 à 9 heures : c'est là que ton corps répare et renforce tes muscles.",
+ "Mange une source de protéines à chaque repas : œufs, poisson, légumineuses, yaourt, tofu…",
+ "Une descente lente (2 à 3 secondes) rend l'exercice plus efficace et plus sûr.",
+ "Les courbatures ne mesurent pas la qualité d'une séance. La régularité, si.",
+ "Après une pause, reprends à environ 80 % de tes charges habituelles.",
+ "Expire pendant l'effort, inspire pendant le retour.",
+ "Marcher 20 minutes les jours de repos aide à récupérer plus vite.",
+ "Change une variante plutôt que d'abandonner un exercice qui ne te plaît pas.",
+ "Fais le point toutes les 4 semaines : tes repères te montrent le chemin parcouru."];
+const tipsUnlocked = () => Math.min(TIPS.length, 2 + levelOf(totalXP()));
+
+/* ---------- Schéma des muscles travaillés ---------- */
+const MUSC_G = {squat:["quads glutes","hams abs"],hinge:["hams glutes","lowback"],glutes:["glutes","hams"],lunge:["quads glutes","hams calves"],quad:["quads",""],ham:["hams",""],calf:["calves",""],
+ hpush:["chest","delts triceps"],vpush:["delts","triceps traps"],fly:["chest","delts"],lateral:["delts",""],rear:["reardelts upperback","traps"],tri:["triceps",""],bi:["biceps","forearms"],
+ vpull:["lats","biceps upperback"],hpull:["upperback lats","biceps reardelts"],core:["abs","obliques"],cardio:["quads calves","glutes"],mob:["lowback abs","glutes"]};
+const MUSC_X = {lomb:["lowback","glutes hams"],abduc:["glutes",""],kick:["glutes","hams"],superman:["lowback upperback","glutes"],facepull:["reardelts","upperback traps"],lateral:["obliques","abs"],crunchp:["abs","obliques"],pallof:["obliques","abs"],
+ w1:["delts",""],w2:["hams glutes",""],w3:["quads glutes",""],w4:["glutes quads",""],w5:["calves quads","delts"],w6:["lowback abs",""],w7:["quads abs","calves"],
+ s1:["quads",""],s2:["hams",""],s3:["chest","delts"],s4:["lowback lats",""],s5:["glutes",""],s6:["triceps delts",""],s7:["calves",""],
+ m1:["abs",""],m2:["lowback abs",""],m3:["quads","abs"],m4:["upperback obliques",""],m5:["glutes",""],m6:["hams",""]};
+const MUSC_LABEL = {quads:"Quadriceps",glutes:"Fessiers",hams:"Ischios",calves:"Mollets",abs:"Abdominaux",obliques:"Obliques",lowback:"Bas du dos",chest:"Pectoraux",delts:"Épaules",reardelts:"Arrière d'épaules",triceps:"Triceps",biceps:"Biceps",forearms:"Avant-bras",lats:"Grand dorsal",upperback:"Haut du dos",traps:"Trapèzes"};
+function musclesOf(id){ const m = MUSC_X[id] || MUSC_G[EX[id].g] || ["",""]; return {p:m[0].split(" ").filter(Boolean), s:m[1].split(" ").filter(Boolean)}; }
+function musclesSVG(id, mm, label, text){
+  const m = mm || musclesOf(id);
+  const cls = k => m.p.includes(k) ? "mp" : m.s.includes(k) ? "ms" : "m0";
+  const E = (k,cx,cy,rx,ry) => '<ellipse class="'+cls(k)+'" cx="'+cx+'" cy="'+cy+'" rx="'+rx+'" ry="'+ry+'"/>';
+  const Rr = (k,x,y,w,h,r) => '<rect class="'+cls(k)+'" x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="'+(r||2)+'"/>';
+  const base = '<circle class="mb" cx="30" cy="9" r="7"/><rect class="mb" x="18" y="19" width="24" height="44" rx="9"/><rect class="mb" x="8" y="22" width="9" height="38" rx="4.5"/><rect class="mb" x="43" y="22" width="9" height="38" rx="4.5"/><rect class="mb" x="18" y="58" width="11" height="58" rx="5.5"/><rect class="mb" x="31" y="58" width="11" height="58" rx="5.5"/>';
+  const front = base + E("delts",17,25,5,4.5)+E("delts",43,25,5,4.5)+E("chest",24.5,31,5.5,4.5)+E("chest",35.5,31,5.5,4.5)+Rr("abs",26,37,8,19,3)+E("obliques",21,46,2.5,8)+E("obliques",39,46,2.5,8)
+    +E("biceps",12.5,35,3.4,7)+E("biceps",47.5,35,3.4,7)+E("forearms",12.5,50,3,7)+E("forearms",47.5,50,3,7)+E("quads",23.5,75,4.8,13)+E("quads",36.5,75,4.8,13)+E("calves",23.5,101,3.6,9)+E("calves",36.5,101,3.6,9);
+  const back = base + '<path class="'+cls("traps")+'" d="M22 20 L30 17 L38 20 L34 27 L26 27 Z"/>'+E("reardelts",17,25,5,4.5)+E("reardelts",43,25,5,4.5)+Rr("upperback",23,27,14,9,3)+E("lats",21.5,41,3.5,9)+E("lats",38.5,41,3.5,9)+Rr("lowback",26,47,8,9,3)
+    +E("triceps",12.5,35,3.4,7)+E("triceps",47.5,35,3.4,7)+E("forearms",12.5,50,3,7)+E("forearms",47.5,50,3,7)+E("glutes",24.5,63,5.5,5.5)+E("glutes",35.5,63,5.5,5.5)+E("hams",23.5,80,4.8,11)+E("hams",36.5,80,4.8,11)+E("calves",23.5,101,4,9)+E("calves",36.5,101,4,9);
+  const names = m.p.map(k=>'<b>'+MUSC_LABEL[k]+'</b>').concat(m.s.map(k=>MUSC_LABEL[k])).join(" · ");
+  return '<div class="musc"><svg viewBox="0 0 60 120" role="img" aria-label="Muscles travaillés, vue de face">'+front+'</svg><svg viewBox="0 0 60 120" role="img" aria-label="Muscles travaillés, vue de dos">'+back+'</svg><div class="grow stack" style="gap:6px"><span class="eyebrow">'+(label||"Muscles travaillés")+'</span><p class="small">'+names+'</p>'+(text||"")+'<p class="tiny muted"><i class="lg mp"></i> principal <i class="lg ms"></i> secondaire</p></div></div>';
+}
+function videoURL(id){ return "https://www.youtube.com/results?search_query=" + encodeURIComponent(EX[id].n + " exécution technique"); }
+function tutoExtras(id){
+  const e = EX[id];
+  return musclesSVG(id)
+    + '<ol class="steps">'+e.c.map((c,i)=>'<li><span class="sn">'+(i+1)+'</span><span>'+esc(c)+'</span></li>').join("")+'</ol>'
+    + '<a class="btn sm line" href="'+videoURL(id)+'" target="_blank" rel="noopener">Voir une démonstration vidéo</a>';
+}
+
+/* ---------- Mode pause (maladie, blessure, vacances) ---------- */
+const BREAK_WHY = {
+ malade:{n:"Malade",face:"listen",t:"Repose-toi bien. Ta série, tes objectifs et ton programme sont gelés : rien n'est perdu, tout t'attend à ton retour."},
+ blessure:{n:"Blessure",face:"listen",t:"Prends soin de toi et suis l'avis d'un professionnel de santé. Ta progression est gelée pendant la pause."},
+ vacances:{n:"Vacances",face:"rest",t:"Profite bien ! Ta progression est en pause. Marcher, nager, bouger pour le plaisir, c'est déjà parfait."},
+ autre:{n:"Pause",face:"rest",t:"Pause activée. Ta série et ton programme sont gelés jusqu'à ton retour."}};
+function onBreak(){ return (S.breaks||[]).find(b=>!b.to) || null; }
+function isPausedDay(k){ return (S.breaks||[]).some(b=>b.from<=k && (!b.to || k<=b.to)); }
+function pausedDaysIn(from, n){ let c=0; for (let i=0;i<n;i++) if (isPausedDay(dk(addDays(from,i)))) c++; return c; }
+function weekGoal(wk){
+  if (!S.profile) return 0; wk = wk || weekKey();
+  const m = parseDk(wk); let n = 0;
+  for (let i=0;i<7;i++){ const d = addDays(m,i); if (S.profile.days.includes(d.getDay()) && !isPausedDay(dk(d))) n++; }
+  return n;
+}
+function frozenWeeks(){
+  if (!S.program || !(S.breaks||[]).length) return 0;
+  let d = monday(parseDk(S.program.start)), n = 0; const cur = monday(new Date());
+  while (d < cur){ if (pausedDaysIn(d,7) >= 4) n++; d = addDays(d,7); }
+  return n;
+}
+function startBreak(why){
+  if (onBreak()) return;
+  S.breaks = S.breaks || [];
+  S.breaks.push({from: todayKey(), to: null, why: BREAK_WHY[why] ? why : "autre"});
+  save();
+}
+function endBreak(){
+  const b = onBreak(); if (!b) return "";
+  const y = dk(addDays(new Date(),-1));
+  const days = Math.round((parseDk(todayKey()) - parseDk(b.from))/864e5);
+  if (y < b.from) { S.breaks.splice(S.breaks.indexOf(b),1); save(); return "Pause annulée"; }
+  b.to = y;
+  let msg = "Bon retour ! On reprend là où tu en étais.";
+  if (days >= 10){
+    const f = days >= 21 ? 0.85 : 0.9;
+    Object.values(S.lastByEx).forEach(r=>{ if (r.next) r.next = Math.max(1, Math.round(r.next*f)); });
+    msg = "Bon retour ! Charges réduites de "+Math.round((1-f)*100)+" % pour reprendre en douceur.";
+  }
+  if (days >= 3) award("back-"+b.from, 30, "Retour de pause", false);
+  checkBadges();
+  save();
+  return msg;
+}
+function breakCoach(){ const b = onBreak(), w = BREAK_WHY[b.why] || BREAK_WHY.autre; return {face:w.face, text:w.t}; }
+function breakCard(){
+  const b = onBreak(), w = BREAK_WHY[b.why] || BREAK_WHY.autre;
+  const days = Math.round((parseDk(todayKey()) - parseDk(b.from))/864e5);
+  const st = S.program ? streakInfo().streak : 0;
+  return '<section class="card stack pausecard"><div class="row between"><span class="eyebrow">Mode pause · '+esc(w.n)+'</span><span class="pill">'+(days? days+" j":"aujourd'hui")+'</span></div>'
+    +'<h2>Ta progression est gelée</h2>'
+    +'<ul class="cues small"><li>Série de semaines conservée'+(st?" ("+st+")":"")+'</li><li>Objectifs de la semaine et défi du mois ajustés</li><li>Programme figé : semaine '+blockWeek()+' sur 4 du bloc</li><li>Niveau, XP, saison et récompenses intacts</li></ul>'
+    +(days>=10?'<p class="small muted">Au retour, je baisserai un peu tes charges pour reprendre en douceur.</p>':'')
+    +'<button class="btn block" data-act="endbreak">Je reprends l\'entraînement</button>'
+    +(b.why==="malade"||b.why==="blessure"
+      ? '<p class="small muted">Envie de bouger un peu ? Une respiration douce, sans forcer.</p><div class="row wrap"><button class="btn sm ghost" data-act="breath" data-v="'+BREATH[0].id+'">'+esc(BREATH[0].n)+'</button></div>'
+      : '<p class="small muted">Envie de bouger un peu ? C\'est facultatif.</p><div class="row wrap"><button class="btn sm ghost" data-act="start" data-v="MOB">Mobilité 15 min</button><button class="btn sm ghost" data-act="start" data-v="STR">Étirements 10 min</button></div>')
+    +'</section>';
+}
+function breakSheet(){
+  return '<div class="sheet" data-act="closesheet"><div class="panel" data-stop="1"><div class="row"><img class="face" src="'+IMG("listen")+'" alt=""><h2>Mettre en pause</h2></div>'
+    +'<p class="small">Pendant la pause, ta série de semaines, tes objectifs et ton programme sont gelés. Tu ne perds ni XP, ni niveau, ni récompenses. Tu reprends quand tu veux.</p>'
+    +'<div class="stack">'+Object.entries(BREAK_WHY).map(([id,w])=>'<button class="choice" data-act="dobreak" data-v="'+id+'"><b>'+esc(w.n==="Pause"?"Autre raison":w.n)+'</b></button>').join("")+'</div>'
+    +'<button class="btn ghost" data-act="closesheet">Annuler</button></div></div>';
+}
+
+/* ---------- Descriptif de séance ---------- */
+const SESSION_INFO = {
+ FA:"Une séance complète qui fait travailler les grandes chaînes musculaires : jambes, poussée et tirage. Beaucoup de muscles en même temps, donc un renforcement global et une bonne dépense d'énergie.",
+ FB:"Accent sur l'arrière du corps (fessiers, ischios, dos) et les épaules. Renforcer cette chaîne améliore la posture et protège le bas du dos au quotidien.",
+ FC:"Fessiers, poitrine et dos : une séance qui équilibre l'avant et l'arrière du corps, pour des hanches stables et une silhouette tonique.",
+ UP:"Le haut du corps : pectoraux, dos, épaules et bras. Un dos et des épaules solides aident à se tenir droit et rendent plus faciles les gestes du quotidien (porter, pousser, soulever).",
+ LO:"Le bas du corps, où se trouvent les plus gros muscles. Les renforcer améliore l'équilibre, protège les genoux et le dos, et relance le métabolisme.",
+ PUSH:"Les muscles qui poussent : pectoraux, épaules et triceps. Utiles pour se relever du sol, porter au-dessus de la tête et avoir des épaules stables.",
+ PULL:"Les muscles qui tirent : dos, arrière des épaules et biceps. Le meilleur antidote aux épaules enroulées par le travail sur écran.",
+ LEGS:"Quadriceps, ischios, fessiers et mollets. Des jambes fortes, c'est plus d'endurance, de stabilité et des articulations mieux protégées.",
+ MOB:"Mobilité douce des hanches, du dos et des épaules. Elle réduit les raideurs, aide à récupérer et agrandit l'amplitude de tes mouvements.",
+ STR:"Étirements de tout le corps. Ils détendent les muscles après l'effort, apaisent le système nerveux et améliorent la souplesse avec la régularité."};
+const GOAL_IMPACT = {
+ forme:"Pour ta remise en forme : du travail complet, à une intensité qui progresse doucement.",
+ muscle:"Pour tonifier : des séries proches de l'effort, qui stimulent le développement musculaire.",
+ force:"Pour la force : charges plus lourdes sur les exercices repères et repos plus longs.",
+ endurance:"Pour l'endurance : plus de répétitions et des repos courts pour tenir l'effort plus longtemps.",
+ mobilite:"Pour la mobilité : des mouvements en grande amplitude, contrôlés, qui assouplissent en renforçant.",
+ regularite:"Pour la régularité : une séance faisable, l'important est de venir."};
+function sessionBrief(s, compact){
+  const items = (s.items||[]).filter(it=>it.phase==="main" || !it.phase);
+  const list = items.length ? items : (s.items||[]);
+  const cnt = {};
+  list.forEach(it=>{ if (!EX[it.ex]) return; const m = musclesOf(it.ex); m.p.forEach(k=>cnt[k]=(cnt[k]||0)+2); m.s.forEach(k=>cnt[k]=(cnt[k]||0)+1); });
+  const ranked = Object.entries(cnt).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+  const prim = ranked.filter(k=>cnt[k]>=2).slice(0,5), sec = ranked.filter(k=>!prim.includes(k)).slice(0,4);
+  const info = SESSION_INFO[s.type] || "";
+  const txt = '<p class="small">'+esc(info)+'</p>'+(!compact && s.type!=="MOB" && s.type!=="STR" ? '<p class="small muted">'+esc(GOAL_IMPACT[goal()]||"")+'</p>' : '');
+  return '<div class="brief">'+musclesSVG(null, {p:prim, s:sec}, "Ce que tu travailles", txt)+'</div>';
+}
+
+/* ---------- Cartes de jeu ---------- */
+function homeGameCards(){
+  let h = "";
+  const sk = streakInfo();
+  h += '<section class="card streak"><div class="big num">'+sk.streak+'</div><div class="grow stack" style="gap:2px"><span class="eyebrow">Série de semaines</span><p class="small">'+(sk.streak? "Semaines d'affilée avec ton objectif atteint." : "Atteins ton objectif de la semaine pour lancer ta série.")+'</p><p class="tiny muted">'+(sk.jokers? sk.jokers+" joker"+(sk.jokers>1?"s":"")+" de côté : une semaine ratée ne casse pas ta série. " : "1 joker gagné toutes les 4 semaines réussies. ")+'Prochain bonus à '+(Math.floor(sk.streak/4)+1)*4+' semaines.</p></div></section>';
+  const wk = weekKey();
+  if (weekMet(wk)){
+    h += S.chests[wk]
+      ? '<section class="card row"><span class="eyebrow grow">Coffre de la semaine ouvert</span><span class="small">'+esc(rewardLabel(S.chests[wk]))+'</span></section>'
+      : '<button class="chest" data-act="chest" data-v="'+wk+'" style="width:100%;text-align:left;cursor:pointer"><svg viewBox="0 0 52 52" aria-hidden="true"><rect x="6" y="20" width="40" height="24" rx="4" fill="var(--accent)"/><path d="M6 22 Q26 4 46 22 Z" fill="var(--accent-ink)" opacity=".9"/><rect x="22" y="24" width="8" height="10" rx="2" fill="var(--peach)"/></svg><div class="grow"><b>Coffre de la semaine</b><p class="small muted">Objectif atteint ! Touche pour l\'ouvrir.</p></div></button>';
+  } else {
+    h += '<section class="card row" style="opacity:.8"><svg viewBox="0 0 52 52" width="40" height="40" aria-hidden="true"><rect x="6" y="20" width="40" height="24" rx="4" fill="var(--surface-2)"/><path d="M6 22 Q26 4 46 22 Z" fill="var(--line)"/></svg><div class="grow"><b class="small">Coffre de la semaine</b><p class="tiny muted">S\'ouvre quand tu boucles ta semaine.</p></div></section>';
+  }
+  const n = tipsUnlocked(), doy = Math.floor((new Date() - new Date(new Date().getFullYear(),0,0))/864e5);
+  h += '<section class="card tip"><img class="face" src="'+IMG("demonstrate")+'" alt=""><div class="stack" style="gap:4px"><span class="eyebrow">Le conseil de CORY</span><p class="small">'+esc(TIPS[doy % n])+'</p></div></section>';
+  return h;
+}
+function monthCard(){
+  const m = monthChallenges();
+  return '<section class="stack"><span class="eyebrow">Défis de '+m.label+'</span>'+m.list.map(c=>'<div class="card chal">'+ringSVG(c.p/c.of)+'<div class="grow"><div style="font-weight:600">'+esc(c.t)+'</div><div class="tiny muted num">'+Math.min(c.p,c.of)+' / '+c.of+' · +'+c.xp+' XP</div></div>'+(c.p>=c.of?'<span class="pill ok">Réussi</span>':'')+'</div>').join("")+'</section>';
+}
+function seasonCard(){
+  const sStart = S.program ? parseDk(S.program.start) : new Date();
+  const elapsed = Math.floor((parseDk(todayKey()) - sStart)/864e5);
+  const daysLeft = Math.max(0, 42 + pausedDaysIn(sStart, elapsed+1) - elapsed);
+  const sx = seasonXP(), th = seasonThresholds(), got = th.filter(n=>sx>=n).length;
+  return '<section class="card stack"><div class="row between"><div><span class="eyebrow">Pass de saison · Racines</span><p class="small muted num">'+daysLeft+' jours restants · '+sx+' XP de saison</p></div><span class="pill acc num">'+got+' / 10</span></div>'
+    +'<div class="tier">'+th.map(n=>'<div class="'+(sx>=n?"on":"")+'"></div>').join("")+'</div>'
+    +'<div class="rlist">'+th.map((n,i)=>'<div class="'+(sx>=n?"on":"")+'"><span>Palier '+(i+1)+' · '+esc(rewardLabel(SEASON_REWARDS[i]))+'</span><span class="num">'+(sx>=n?"Obtenu":n+" XP")+'</span></div>').join("")+'</div>'
+    +'<p class="tiny muted">Les paliers sont calés sur ton nombre de séances par semaine : en restant '+G("régulière","régulier","régulier·e")+', tu vas au bout. Les jours de pause allongent la saison.</p></section>';
+}
+function masteryCard(){
+  const ids = Object.keys(S.lastByEx).filter(id=>EX[id] && masteryPoints(id)>0).sort((a,b)=>masteryPoints(b)-masteryPoints(a)).slice(0,10);
+  return '<section class="card stack"><span class="eyebrow">Maîtrise des exercices</span>'
+    +(ids.length ? '<p class="tiny muted">Chaque séance fait monter la maîtrise, un record compte double. Bronze, argent, or, puis diamant.</p>'+ids.map(id=>{ const pts = masteryPoints(id), t = masteryTier(pts), nx = MASTERY[t+1];
+      return '<div class="stack" style="gap:4px"><div class="row between small"><span>'+esc(EX[id].n)+medal(id)+'</span><span class="muted num">'+(nx? pts+" / "+nx[0] : "Max")+'</span></div><div class="bar"><i style="width:'+(nx? (pts/nx[0]*100) : 100)+'%"></i></div></div>'; }).join("")
+      : '<p class="small muted">Fais tes premières séances pour gagner tes premières médailles.</p>')+'</section>';
+}
+function tipsCard(){
+  const n = tipsUnlocked();
+  return '<section class="card stack"><span class="eyebrow">Conseils de CORY · '+n+' / '+TIPS.length+'</span><p class="tiny muted">Un nouveau conseil à chaque niveau.</p><details><summary class="small" style="cursor:pointer;font-weight:600">Voir les conseils débloqués</summary><ol class="steps" style="margin-top:10px">'+TIPS.slice(0,n).map((t,i)=>'<li><span class="sn">'+(i+1)+'</span><span>'+esc(t)+'</span></li>').join("")+'</ol></details></section>';
+}
+function collectionCard(inv){
+  const t = [...inv.title], f = [...inv.frame], q = [...inv.quote];
+  return '<section class="card stack"><span class="eyebrow">Ma collection</span>'
+    +'<b class="small">Titres</b>'+(t.length?'<div class="chips">'+t.map(id=>'<button class="chip" data-act="equip" data-v="title:'+id+'" aria-pressed="'+(S.settings.title===id)+'">'+esc(TITLE_LABEL(id))+'</button>').join("")+'</div>':'<p class="tiny muted">Gagne des titres avec le pass de saison, les coffres et les records.</p>')
+    +'<b class="small">Cadres photo</b>'+(f.length?'<div class="chips">'+f.map(id=>'<button class="chip" data-act="equip" data-v="frame:'+id+'" aria-pressed="'+(S.settings.frame===id)+'"><i style="display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:6px;vertical-align:-2px;background:'+FRAMES[id].c+'"></i>'+esc(FRAMES[id].n)+'</button>').join("")+'</div>':'<p class="tiny muted">Aucun cadre pour l\'instant.</p>')
+    +'<b class="small">Phrases de CORY</b>'+(q.length? q.map(id=>'<p class="quote">'+esc(quoteText(id))+'</p>').join("") : '<p class="tiny muted">Elles se trouvent dans les coffres et le pass de saison.</p>')
+    +'</section>';
+}
+function chestSheet(r){
+  const eq = r.t==="title"||r.t==="frame";
+  return '<div class="sheet" data-act="closesheet"><div class="panel center" data-stop="1"><img class="face xl pop" src="'+IMG("surprise")+'" alt=""><span class="eyebrow">Coffre de la semaine</span><h2>'+esc(rewardLabel(r))+'</h2>'
+    +(r.t==="quote"?'<p class="quote" style="text-align:left">'+esc(quoteText(r.id))+'</p>':'')
+    +(eq?'<button class="btn" data-act="equip" data-v="'+r.t+':'+r.id+'">Équiper</button>':'')
+    +'<button class="btn ghost" data-act="closesheet">Fermer</button></div></div>';
+}
+
 /* ---------- Moteur de programme ---------- */
-function weekIndex(){ if(!S.program) return 0; return Math.max(0, Math.floor((monday(new Date()) - monday(parseDk(S.program.start)))/(7*864e5))); }
+function weekIndex(){ if(!S.program) return 0; return Math.max(0, Math.floor((monday(new Date()) - monday(parseDk(S.program.start)))/(7*864e5)) - frozenWeeks()); }
 function blockWeek(){ return weekIndex()%4 + 1; }
 function goal(){ return (S.profile.goals[0]) || "forme"; }
 function candidates(group){
@@ -728,8 +1083,9 @@ function pickFor(group, variant, used){
   if (!c.length) return null;
   const sw = S.swaps[group];
   if (sw && c.some(e=>e.id===sw)) return EX[sw];
-  return c[variant % Math.min(c.length,2)];
+  return c[variant % c.length];
 }
+function blockIndex(){ return Math.floor(weekIndex()/4); }
 function dosage(isMain, ex){
   const g = goal(), lvl = S.profile.level;
   let sets=3, lo=10, hi=12, rest=75;
@@ -762,12 +1118,15 @@ function buildSession(type, opts){
   if (wantCardio) slots.push("cardio");
   const used = new Set(); const items = [];
   const variant = Math.floor(weekIndex()/2) + (opts.occurrence||0);
+  const undul = ["force","muscle","forme"].includes(goal()) && p.level>=2 && blockWeek()!==4;
+  const wave = undul && ((weekIndex() + (["FB","LO","PULL"].includes(type)?1:0) + (opts.occurrence||0)) % 2 === 1);
   slots.forEach((g,i)=>{
     const isMain = i<2 && g!=="core" && g!=="cardio";
-    const ex = pickFor(g, isMain? (opts.occurrence||0) : variant, used);
+    const ex = pickFor(g, isMain ? blockIndex()+(opts.occurrence||0) : variant+blockIndex(), used);
     if (!ex){ notes.push("Aucun exercice « "+GROUP_LABEL[g]+" » compatible avec ton matériel et tes précautions : je l'ai retiré."); return; }
     used.add(ex.id);
     const d = dosage(isMain, ex);
+    if (wave && d.unit==="reps"){ d.lo += 3; d.hi = (d.hi||d.lo)+3; d.rest = Math.max(45, d.rest-15); }
     if (opts.tired && d.sets>2) d.sets -= 1;
     items.push(Object.assign({ex:ex.id, main:isMain, phase:"main"}, d));
   });
@@ -777,7 +1136,7 @@ function buildSession(type, opts){
   const warm = (opts.short ? warmIds.slice(0,3) : warmIds).map(id=>({ex:id, sets:1, lo:35, hi:0, rest:0, unit:"sec", main:false, phase:"warm"}));
   const cool = (opts.short ? coolIds.slice(0,2) : coolIds).map(id=>({ex:id, sets:1, lo:40, hi:0, rest:0, unit:"sec", main:false, phase:"cool"})).concat([{ex:"m1", sets:1, lo:60, hi:0, rest:0, unit:"sec", main:false, phase:"cool"}]);
   items.unshift(...warm); items.push(...cool);
-  return {type, title:T.t, focus:T.f, warm: p.level===1 ? "Échauffement guidé, puis 1 série légère du premier exercice." : "Échauffement guidé, puis 2 séries de montée en charge sur le premier exercice.", items, notes};
+  return {type, title:T.t, focus:T.f+(undul?(wave?" · séance volume":" · séance lourde"):""), warm: p.level===1 ? "Échauffement guidé, puis 1 série légère du premier exercice." : "Échauffement guidé, puis 2 séries de montée en charge sur le premier exercice.", items, notes};
 }
 function cycle(){ return CYCLES[clamp(S.profile.days.length,2,5)]; }
 function weekLogs(wk){ wk = wk||weekKey(); return S.logs.filter(l=>weekKey(parseDk(l.date))===wk && l.type!=="MOB" && l.type!=="STR" && l.items.some(it=>it.sets.some(s=>s.done))); }
@@ -785,9 +1144,10 @@ function nextSessionType(){ const c = cycle(); const n = weekLogs().length; retu
 function todayStatus(){
   const now = new Date(), t = todayKey(), dow = now.getDay();
   const doneToday = S.logs.find(l=>l.date===t && l.completed && l.type!=="MOB" && l.type!=="STR");
-  const goalN = S.profile.days.length, n = weekLogs().length;
+  const goalN = weekGoal(), n = weekLogs().length;
+  if (onBreak()) return {kind:"break"};
   if (doneToday) return {kind:"done", log:doneToday};
-  if (n >= goalN) return {kind:"weekdone"};
+  if (n >= goalN && goalN>0) return {kind:"weekdone"};
   const planned = S.profile.days.includes(dow) && !S.postponed[t];
   return {kind: planned ? "session" : "rest"};
 }
@@ -801,7 +1161,8 @@ function hello(){ const h=new Date().getHours(); return h<6?"Bonsoir":h<18?"Salu
 function coachHome(st){
   const name = S.profile.name ? " "+S.profile.name : "";
   const last = S.logs.filter(l=>l.completed).slice(-1)[0];
-  if (S.active) return {face:"motivate", text:"Ta séance est en pause. On la reprend là où tu t'étais arrêtée ?"};
+  if (st.kind==="break") return breakCoach();
+  if (S.active) return {face:"motivate", text:"Ta séance est en pause. On la reprend là où tu t'étais "+G("arrêtée","arrêté","arrêté·e")+" ?"};
   if (st.kind==="done") return {face:"farewell", text:"Séance faite aujourd'hui, bravo"+name+". Récupère bien, à demain !"};
   if (st.kind==="weekdone") return {face:"congratulate", text:"Objectif de la semaine atteint"+name+" ! La récupération fait aussi partie du programme."};
   if (st.kind==="rest"){
@@ -847,7 +1208,7 @@ function tabsBar(){
 function exRow(it,i){
   const e = EX[it.ex]; const ns = Array.isArray(it.sets) ? it.sets.length : it.sets;
   const dose = it.unit==="sec" ? (ns>1?ns+" × ":"")+(it.lo>=120?Math.round(it.lo/60)+" min":it.lo+" s") : ns+" × "+it.lo+(it.hi&&it.hi!==it.lo?"–"+it.hi:"");
-  return '<li><button class="rowbtn" data-act="tuto" data-v="'+it.ex+'" aria-label="Voir le tuto : '+esc(e.n)+'">'+thumb(it.ex, it.main)+'<div class="grow"><div style="font-weight:600">'+esc(e.n)+'</div><div class="tiny muted">'+esc(GROUP_LABEL[e.g])+(it.main?" · exercice repère":"")+' · voir le tuto</div>'+(e.w && it.unit!=="sec" ? (()=>{ const L=S.lastByEx[it.ex]; const kg = L && (L.next!=null?L.next:L.weight); return '<div class="tiny" style="font-weight:700;color:var(--accent)">'+(kg?"Charge : "+kg+" kg":"Charge : à noter à la 1re séance")+'</div>'; })() : '')+'</div><span class="pill num">'+dose+'</span></button></li>';
+  return '<li><button class="rowbtn" data-act="tuto" data-v="'+it.ex+'" aria-label="Voir le tuto : '+esc(e.n)+'">'+thumb(it.ex, it.main)+'<div class="grow"><div style="font-weight:600">'+esc(e.n)+medal(it.ex)+'</div><div class="tiny muted">'+esc(GROUP_LABEL[e.g])+(it.main?" · exercice repère":"")+' · voir le tuto</div>'+(e.w && it.unit!=="sec" ? (()=>{ const L=S.lastByEx[it.ex]; const kg = L && (L.next!=null?L.next:L.weight); const sl = startLoad(it.ex); return '<div class="tiny" style="font-weight:700;color:var(--accent)">'+(kg?"Charge : "+kg+" kg":sl?"Départ conseillé : ~"+sl+" kg":"Charge : à noter à la 1re séance")+'</div>'; })() : '')+'</div><span class="pill num">'+dose+'</span></button></li>';
 }
 function thumb(id, main){ const A = ANIMS[EX_ANIM[id]]; return '<span class="thumb'+(main?" main":"")+'">'+(A?FIG.svg(A,1,""):"")+'</span>'; }
 const mainItems = s => s.items.filter(it=>!it.phase || it.phase==="main");
@@ -873,7 +1234,7 @@ requestAnimationFrame(animLoop);
 function estMinutes(s){ return Math.round(2 + s.items.reduce((a,it)=> a + (it.unit==="sec" ? it.sets*(it.lo+it.rest)/60 : it.sets*(0.8+it.rest/60)), 0)); }
 
 function challenges(){
-  const wl = weekLogs(), goalN = S.profile.days.length;
+  const wl = weekLogs(), goalN = Math.max(1, weekGoal());
   const fb = S.logs.filter(l=>weekKey(parseDk(l.date))===weekKey() && l.rpe).length;
   const before = new Set(); S.logs.filter(l=>weekKey(parseDk(l.date))!==weekKey()).forEach(l=>l.items.forEach(it=>{ if(it.sets.some(s=>s.done)) before.add(it.ex); }));
   const newEx = new Set(); wl.forEach(l=>l.items.forEach(it=>{ if(it.sets.some(s=>s.done) && !before.has(it.ex)) newEx.add(it.ex); }));
@@ -896,7 +1257,9 @@ function viewHome(){
   const hr = new Date().getHours(), alt = msg.alt || (hr<11 ? "motivate" : hr>=20 ? "rest" : "listen");
   const faces = [resolveFace(msg.face), resolveFace(alt)].filter((x,i,arr)=>arr.indexOf(x)===i);
   h += '<section class="coach"><div class="say"><div class="eyebrow" style="margin-bottom:6px">CORY</div><p>'+esc(msg.text)+'</p></div><img src="img/'+faces[0]+'.webp" data-faces="'+faces.join(",")+'" alt="CORY, '+esc(FACE_LABEL[faces[0]]||"")+'"></section>';
-  if (S.active){
+  if (st.kind==="break"){
+    h += breakCard();
+  } else if (S.active){
     const a = S.active;
     h += '<section class="card stack"><div class="eyebrow">Séance en pause</div><h2>'+esc(a.title)+'</h2><button class="btn block" data-act="resume">Reprendre la séance</button></section>';
   } else if (st.kind==="session" || st.kind==="rest" || st.kind==="weekdone"){
@@ -904,14 +1267,15 @@ function viewHome(){
     if (st.kind==="session"){
       h += '<section class="card today stack"><div class="row between"><span class="eyebrow">Séance du jour</span><span class="pill acc num">≈ '+estMinutes(s)+' min</span></div>'
         +'<h2>'+esc(s.title)+'</h2><p class="muted small">'+esc(s.focus)+(blockWeek()===4?" · semaine allégée":"")+'</p>'
-        +phaseLine(s)+'<ul class="exlist">'+mainItems(s).map(exRow).join("")+'</ul>'
+        +sessionBrief(s, true)+phaseLine(s)+'<ul class="exlist">'+mainItems(s).map(exRow).join("")+'</ul>'
         +s.notes.map(n=>'<p class="note">'+esc(n)+'</p>').join("")
         +'<button class="btn block" data-act="start" data-v="'+nx.type+'" data-o="'+nx.occurrence+'">Commencer</button></section>'
         +'<section class="stack"><span class="eyebrow">Besoin d\'ajuster ?</span><div class="alts">'
         +'<button class="alt" data-act="start" data-v="'+nx.type+'" data-o="'+nx.occurrence+'" data-mode="short">J\'ai moins de temps</button>'
-        +'<button class="alt" data-act="start" data-v="'+nx.type+'" data-o="'+nx.occurrence+'" data-mode="tired">Je suis fatiguée</button>'
+        +'<button class="alt" data-act="start" data-v="'+nx.type+'" data-o="'+nx.occurrence+'" data-mode="tired">Je suis '+G("fatiguée","fatigué","fatigué·e")+'</button>'
         +'<button class="alt" data-act="start" data-v="MOB">Plutôt mobilité</button>'
-        +'<button class="alt" data-act="postpone">Reporter</button></div></section>';
+        +'<button class="alt" data-act="postpone">Reporter</button>'
+        +'<button class="alt" data-act="breakopen">Malade ou en vacances</button></div></section>';
     } else {
       h += '<section class="card stack"><div class="eyebrow">'+(st.kind==="rest"?"Jour de repos":"Semaine bouclée")+'</div>'
         +'<p class="small muted">'+(st.kind==="rest"?"Prochaine séance prévue : ":"En avance, si tu veux : ")+'<b style="color:var(--fg)">'+esc(s.title)+'</b></p>'
@@ -922,14 +1286,18 @@ function viewHome(){
     h += '<section class="card stack"><div class="eyebrow">Fait aujourd\'hui</div><h2>'+esc(st.log.title)+'</h2><p class="small muted">'+st.log.items.reduce((a,it)=>a+it.sets.filter(s=>s.done).length,0)+' séries · '+(st.log.duration||0)+' min</p></section>';
   }
   h += '<section class="stack"><span class="eyebrow">Respirer et récupérer</span><div class="wb">'+BREATH.map(b=>'<button class="alt" data-act="breath" data-v="'+b.id+'"><span>'+esc(b.n)+'</span><span class="tiny muted" style="font-weight:400">'+esc(b.d.split(" · ")[0])+'</span></button>').join("")+'</div></section>';
+  if (st.kind!=="break" && st.kind!=="session") h += '<button class="link" data-act="breakopen" style="align-self:flex-start">Malade ou en vacances ? Mettre en pause</button>';
   // Arc hebdo
-  const wl = weekLogs().length, goalN = S.profile.days.length;
-  h += '<section class="card"><div class="arcWrap">'+arcSVG(wl/goalN*100, wl+"/"+goalN)+'<div class="grow stack" style="gap:4px"><span class="eyebrow">Ma semaine</span><p style="font-weight:600">'+(wl>=goalN?"Objectif atteint !":(goalN-wl)+" séance"+(goalN-wl>1?"s":"")+" pour boucler la semaine")+'</p><p class="small muted">Semaine '+blockWeek()+' sur 4 du bloc'+(blockWeek()===4?" (allégée)":"")+'</p></div></div></section>';
+  const wl = weekLogs().length, goalN = weekGoal();
+  if (goalN>0)
+  h += '<section class="card"><div class="arcWrap">'+arcSVG(wl/goalN*100, wl+"/"+goalN)+'<div class="grow stack" style="gap:4px"><span class="eyebrow">Ma semaine</span><p style="font-weight:600">'+(wl>=goalN?"Objectif atteint !":(goalN-wl)+" séance"+(goalN-wl>1?"s":"")+" pour boucler la semaine")+'</p><p class="small muted">Semaine '+blockWeek()+' sur 4 du bloc'+(blockWeek()===4?" (allégée)":"")+(weekGoal()<S.profile.days.length?" · objectif réduit (pause)":"")+'</p></div></div></section>';
+  if (S.settings.game) h += homeGameCards();
   if (S.settings.game){
     const xp = totalXP(), L = levelOf(xp), a = xpFor(L), b = xpFor(L+1);
+    h += monthCard();
     h += '<section class="card stack"><div class="row between"><span class="eyebrow">Prochain palier</span><span class="small muted num">'+(xp-a)+' / '+(b-a)+' XP</span></div>'
       +'<div class="row"><b style="font:700 18px var(--display)">Niveau '+L+'</b><span class="pill">'+paletteName(L)+'</span></div><div class="bar"><i style="width:'+((xp-a)/(b-a)*100)+'%"></i></div></section>';
-    h += '<section class="stack"><span class="eyebrow">Défis de la semaine</span>'+challenges().map(c=>'<div class="card chal">'+ringSVG(c.p/c.of)+'<div class="grow"><div style="font-weight:600">'+esc(c.t)+'</div><div class="tiny muted num">'+Math.min(c.p,c.of)+' / '+c.of+' · +'+c.xp+' XP</div></div>'+(c.p>=c.of?'<span class="pill ok">Réussi</span>':'')+'</div>').join("")+'</section>';
+    if (st.kind!=="break") h += '<section class="stack"><span class="eyebrow">Défis de la semaine</span>'+challenges().map(c=>'<div class="card chal">'+ringSVG(c.p/c.of)+'<div class="grow"><div style="font-weight:600">'+esc(c.t)+'</div><div class="tiny muted num">'+Math.min(c.p,c.of)+' / '+c.of+' · +'+c.xp+' XP</div></div>'+(c.p>=c.of?'<span class="pill ok">Réussi</span>':'')+'</div>').join("")+'</section>';
   }
   return h+'</div>';
 }
@@ -947,12 +1315,13 @@ function viewProgram(){
   const seen = {};
   c.forEach((t,i)=>{ const occ = seen[t]||0; seen[t]=occ+1; const s = buildSession(t,{occurrence:occ}); const open = view.expanded===i;
     h += '<div class="card stack"><button class="row between" style="background:none;border:0;padding:0;text-align:left;cursor:pointer;min-height:44px" data-act="expand" data-v="'+i+'" aria-expanded="'+open+'"><div><div class="eyebrow">Séance '+(i+1)+'</div><h3>'+esc(s.title)+(occ?" (variante)":"")+'</h3><div class="small muted">'+esc(s.focus)+' · ≈ '+estMinutes(s)+' min</div></div><span class="pill">'+(open?"Masquer":"Voir")+'</span></button>'
-      +(open?phaseLine(s)+'<ul class="exlist">'+mainItems(s).map(exRow).join("")+'</ul>'+s.notes.map(n=>'<p class="note">'+esc(n)+'</p>').join("")+'<button class="btn sm line" data-act="start" data-v="'+t+'" data-o="'+occ+'">Lancer cette séance</button>':'')+'</div>'; });
+      +(open?sessionBrief(s)+phaseLine(s)+'<ul class="exlist">'+mainItems(s).map(exRow).join("")+'</ul>'+s.notes.map(n=>'<p class="note">'+esc(n)+'</p>').join("")+'<button class="btn sm line" data-act="start" data-v="'+t+'" data-o="'+occ+'">Lancer cette séance</button>':'')+'</div>'; });
   h += '</section>';
   const zone = p.zones.filter(z=>z!=="global").map(z=>ZONE_LABEL[z].toLowerCase());
   h += '<section class="card stack"><div class="row"><img class="face" src="'+IMG("demonstrate")+'" alt=""><h3>Pourquoi ce programme</h3></div><p class="small">'
     + esc(c.length+" séances "+(c.length<=3?"corps entier":c.length===4?"haut / bas du corps":"poussée, tirage, jambes, haut et bas")+" pour travailler tout le corps chaque semaine avec assez de récupération. ")
-    + esc("Les deux premiers exercices de chaque séance sont des repères : ils restent stables pour mesurer tes progrès. Les accessoires changent toutes les deux semaines pour varier. ")
+    + esc("Les deux premiers exercices de chaque séance sont des repères : ils restent les mêmes pendant un bloc de 4 semaines pour mesurer tes progrès, puis changent au bloc suivant. Les autres exercices tournent toutes les deux semaines parmi toutes les variantes compatibles avec ta salle. "+(p.level>=2 && ["force","muscle","forme"].includes(goal())?"Les séances alternent entre lourdes (moins de répétitions, plus de charge) et volume (plus de répétitions). ":""))
+    + esc(p.weight?"Ton poids sert à proposer des charges de départ indicatives et à estimer les calories. ":"")
     + (zone.length?esc("Ta zone prioritaire ("+zone[0]+") reçoit un exercice en plus, sans négliger le reste du corps. Cibler une zone ne fait pas perdre de graisse à cet endroit précis. "):"")
     + (p.limits.length?esc("Tu as signalé une sensibilité ("+p.limits.map(l=>LIMITS.find(x=>x.id===l).label.toLowerCase()).join(", ")+") : j'écarte les mouvements qui la sollicitent le plus. En cas de douleur, demande l'avis d'un professionnel de santé."):"")
     +'</p><button class="btn sm ghost" data-act="editprefs">Modifier mes préférences</button></section>';
@@ -973,15 +1342,10 @@ function viewProgress(){
   let h = topBar()+'<div class="stack-lg">';
   if (S.settings.game){
     h += '<section class="card"><div class="arcWrap">'+arcSVG((xp-a)/(b-a)*100, String(L), 104)+'<div class="grow stack" style="gap:4px"><span class="eyebrow">Niveau '+L+' · '+paletteName(L)+'</span><p style="font:700 22px var(--display)" class="num">'+xp+' XP</p><p class="small muted num">'+(b-xp)+' XP avant le niveau '+(L+1)+'</p></div></div></section>';
-    // saison
-    const sStart = S.program ? parseDk(S.program.start) : new Date();
-    const sXP = S.xp.filter(x=>parseDk(x.date)>=sStart).reduce((s,x)=>s+x.amount,0);
-    const tiers = [[250,"Badge Racines"],[600,"Thème Argile"],[1000,"Cadre Terre cuite"],[1500,"Thème Sauge"],[2200,"Titre Arc complet"]];
-    const daysLeft = Math.max(0, 42 - Math.floor((new Date()-sStart)/864e5));
-    h += '<section class="card stack"><div class="row between"><div><span class="eyebrow">Saison 1 · Racines</span><p class="small muted">'+daysLeft+' jours restants · '+sXP+' XP de saison</p></div></div><div class="season">'
-      + tiers.map(([n,l],i)=>'<div class="'+(sXP>=n?"on":"")+'"><i></i>Palier '+(i+1)+'<span class="tiny">'+esc(l)+'</span></div>').join("")+'</div><p class="tiny muted">Les paliers se basent sur ta régularité, pas sur tes charges : 2 séances par semaine suffisent pour aller au bout.</p></section>';
+    h += seasonCard();
   }
   h += '<section class="stats"><div class="stat"><b class="num">'+done.filter(l=>l.type!=="MOB"&&l.type!=="STR").length+'</b><span class="tiny muted">séances</span></div><div class="stat"><b class="num">'+mins+'</b><span class="tiny muted">minutes</span></div><div class="stat"><b class="num">'+sets+'</b><span class="tiny muted">séries</span></div></section>';
+  h += masteryCard();
   // régularité 8 semaines
   const mon = monday(new Date()); const byDay = {}; S.logs.forEach(l=>{ if(l.items.some(it=>it.sets.some(s=>s.done))) byDay[l.date]=(l.type==="MOB"||l.type==="STR"?1:2); });
   h += '<section class="card stack"><span class="eyebrow">Régularité · 8 dernières semaines</span><div class="heat">';
@@ -998,6 +1362,7 @@ function viewProgress(){
   { const Lv = levelOf(totalXP()); const ids = Object.keys(FACE_LABEL); const n = ids.filter(k=>FACE_UNLOCK[k]<=Lv).length;
     h += '<section class="card stack"><span class="eyebrow">Les réactions de CORY · '+n+' / 12</span><p class="small muted">Plus tu avances, plus CORY te montre de facettes.</p><div class="faces">'+ids.map(k=>'<div class="'+(FACE_UNLOCK[k]<=Lv?"":"off")+'"><img src="img/'+k+'.webp" alt="">'+(FACE_UNLOCK[k]<=Lv?FACE_LABEL[k]:"Niveau "+FACE_UNLOCK[k])+'</div>').join("")+'</div></section>'; }
   if (S.settings.game) h += '<section class="stack"><span class="eyebrow">Badges · '+Object.keys(S.badges).length+' / '+BADGES.length+'</span><div class="badges">'+BADGES.map((bd,i)=>'<div class="badge'+(S.badges[bd.id]?"":" off")+'">'+badgeIcon(i,!!S.badges[bd.id])+'<span>'+esc(bd.n)+'</span><span class="tiny muted" style="font-weight:400">'+esc(bd.d)+'</span></div>').join("")+'</div></section>';
+  h += tipsCard();
   // historique
   const hist = S.logs.slice().reverse().slice(0,10);
   h += '<section class="card stack"><span class="eyebrow">Historique</span>'+(hist.length?'<table class="tbl"><tbody>'+hist.map(l=>'<tr><td>'+esc(l.title)+'<div class="tiny muted">'+fmtDate(l.date)+(l.completed?"":" · partielle")+(l.pain?" · gêne signalée":"")+'</div></td><td class="num">'+(l.rpe?"Effort "+l.rpe+"/10":"")+'<div class="tiny muted">'+(l.duration||0)+' min</div></td></tr>').join("")+'</tbody></table>':'<p class="small muted">Aucune séance pour l\'instant.</p>')+'</section>';
@@ -1008,16 +1373,21 @@ const THEMES = [{id:"terra",n:"Terra",l:1,c:"#B5523B"},{id:"argile",n:"Argile",l
 function viewProfile(){
   const p = S.profile, L = levelOf(totalXP());
   const sw = (id,on,label,desc)=>'<div class="toggle"><div class="grow"><div style="font-weight:600">'+label+'</div><div class="tiny muted">'+desc+'</div></div><button class="sw" role="switch" aria-checked="'+on+'" aria-label="'+label+'" data-act="toggle" data-v="'+id+'"></button></div>';
-  let h = topBar()+'<div class="stack-lg"><section class="row"><img class="face lg" src="'+IMG("listen")+'" alt=""><div class="grow"><h1>'+esc(p.name||"Mon profil")+'</h1><p class="muted small">'+LEVELS.find(l=>l.id===p.level).label+' · '+p.days.length+' séances de '+p.minutes+' min</p></div></section>';
+  const fr = S.settings.game && S.settings.frame && FRAMES[S.settings.frame];
+  let h = topBar()+'<div class="stack-lg"><section class="row"><span class="frame" style="background:'+(fr?fr.c:"transparent")+'"><img class="face lg" src="'+IMG("listen")+'" alt="" style="display:block"></span><div class="grow"><h1>'+esc(p.name||"Mon profil")+'</h1>'+(S.settings.game && S.settings.title?'<p class="small" style="font-weight:700;color:var(--accent)">'+esc(TITLE_LABEL(S.settings.title))+'</p>':'')+'<p class="muted small">'+lvlLabel(LEVELS.find(l=>l.id===p.level))+' · '+p.days.length+' séances de '+p.minutes+' min</p></div></section>';
   h += '<section class="card stack"><span class="eyebrow">Mes réglages d\'entraînement</span>'
     +'<p class="small"><b>Objectifs :</b> '+esc(p.goals.map(g=>GOALS.find(x=>x.id===g).label).join(", "))+'</p>'
     +'<p class="small"><b>Zones :</b> '+esc(p.zones.map(z=>ZONE_LABEL[z]).join(", ")||"Corps entier")+'</p>'
     +'<p class="small"><b>Jours :</b> '+esc(p.days.slice().sort((a,b)=>((a+6)%7)-((b+6)%7)).map(d=>DAYS_LONG[d]).join(", "))+'</p>'
     +'<p class="small"><b>Matériel :</b> '+esc(p.equipment.map(e=>EQUIP_LABEL[e]).join(", ")||"Poids du corps")+'</p>'
+    +(p.sex||p.weight||p.height?'<p class="small"><b>Profil :</b> '+esc([({f:"Femme",h:"Homme",a:"Autre"})[p.sex], p.height?p.height+" cm":"", p.weight?p.weight+" kg":""].filter(Boolean).join(" · "))+'</p>':'')
     +'<p class="small"><b>Précautions :</b> '+esc(p.limits.map(l=>LIMITS.find(x=>x.id===l).label).join(", ")||"Aucune")+'</p>'
     +'<button class="btn sm ghost" data-act="editprefs">Modifier</button></section>';
   h += '<section class="card"><div class="toggle" style="border-top:0;padding-top:0"><span class="eyebrow">Préférences</span></div>'+sw("game",S.settings.game,"Mode jeu","XP, niveaux, défis et badges")+sw("reduce",S.settings.reduce,"Réduire les animations","Interface statique, sans mouvement")+'</section>';
-  if (S.settings.game) h += '<section class="card stack"><span class="eyebrow">Thème (récompenses)</span><div class="themes">'+THEMES.map(t=>'<button class="theme" data-act="theme" data-v="'+t.id+'" aria-pressed="'+(S.settings.theme===t.id)+'"'+(L<t.l?" disabled":"")+'><i style="background:'+t.c+'"></i>'+t.n+'<span class="tiny muted" style="font-weight:600">'+(L<t.l?"Niv. "+t.l:"Débloqué")+'</span></button>').join("")+'</div></section>';
+  if (S.settings.game){ const inv = inventory();
+    h += '<section class="card stack"><span class="eyebrow">Thème (récompenses)</span><div class="themes">'+THEMES.map(t=>'<button class="theme" data-act="theme" data-v="'+t.id+'" aria-pressed="'+(S.settings.theme===t.id)+'"'+(!inv.theme.has(t.id)?" disabled":"")+'><i style="background:'+t.c+'"></i>'+t.n+'<span class="tiny muted" style="font-weight:600">'+(!inv.theme.has(t.id)?"Niv. "+t.l+" ou saison":"Débloqué")+'</span></button>').join("")+'</div></section>';
+    h += collectionCard(inv); }
+  h += '<section class="card stack"><span class="eyebrow">Mode pause</span><p class="small muted">'+G("Malade, blessée","Malade, blessé","Malade, blessé·e")+', en vacances ? La pause gèle ta série, tes objectifs et ton programme. Tu ne perds rien.</p>'+(onBreak()?'<button class="btn sm" data-act="endbreak">Reprendre l\'entraînement</button>':'<button class="btn sm ghost" data-act="breakopen">Mettre en pause</button>')+'</section>';
   h += '<section class="card stack"><span class="eyebrow">Mes données</span><p class="small muted">'+(syncState==="cloud"?"Sauvegardées sur ton compte et sur cet appareil.":"Sauvegardées sur cet appareil.")+' Rien n\'est partagé.</p>'
     +'<div class="row wrap"><button class="btn sm ghost" data-act="export">Copier mes données</button><button class="btn sm ghost" data-act="import">Importer</button><button class="btn sm danger" data-act="wipe">Tout effacer</button></div></section>';
   h += '<p class="tiny muted" style="padding:0 4px">CORY est une coach virtuelle : elle ne remplace pas l\'avis d\'un professionnel de santé ou du sport. En cas de douleur, arrête l\'exercice et consulte.</p>';
@@ -1039,8 +1409,9 @@ function viewOnboarding(){
       +'<p class="small muted">2 minutes de questions, rien d\'obligatoire sur ta santé ou ton poids.</p><button class="btn block" data-act="obnext">On commence</button></div>';
   }
   if (st===1){ body = '<h1>Ce que tu veux travailler</h1><p class="muted">Choisis dans l\'ordre de priorité.</p><div class="field"><label for="obname" class="eyebrow">Ton prénom (facultatif)</label><input id="obname" type="text" autocomplete="given-name" value="'+esc(d.name)+'" data-f="name"></div><span class="eyebrow">Objectifs</span>'+chips(GOALS,d.goals,"goals",true); canNext = d.goals.length>0; }
-  if (st===2){ body = '<h1>Ton niveau</h1><p class="muted">Tu pourras le changer quand tu veux.</p><div class="stack">'+LEVELS.map(l=>'<button class="choice" data-act="level" data-v="'+l.id+'" aria-pressed="'+(d.level===l.id)+'"><b>'+l.label+'</b><span class="small muted">'+l.desc+'</span></button>').join("")+'</div>'
-     +'<div class="row"><div class="field grow"><label for="obh" class="eyebrow">Taille cm (facultatif)</label><input id="obh" type="number" inputmode="numeric" value="'+esc(d.height)+'" data-f="height"></div><div class="field grow"><label for="obw" class="eyebrow">Poids kg (facultatif)</label><input id="obw" type="number" inputmode="decimal" value="'+esc(d.weight)+'" data-f="weight"></div></div><p class="tiny muted">Ces valeurs ne servent jamais seules à fixer tes charges.</p>'; }
+  if (st===2){ body = '<h1>Ton niveau</h1><p class="muted">Tu pourras le changer quand tu veux.</p><div class="stack">'+LEVELS.map(l=>'<button class="choice" data-act="level" data-v="'+l.id+'" aria-pressed="'+(d.level===l.id)+'"><b>'+lvlLabel(l)+'</b><span class="small muted">'+l.desc+'</span></button>').join("")+'</div>'
+     +'<div class="row"><div class="field grow"><label for="obh" class="eyebrow">Taille cm (facultatif)</label><input id="obh" type="number" inputmode="numeric" value="'+esc(d.height)+'" data-f="height"></div><div class="field grow"><label for="obw" class="eyebrow">Poids kg (facultatif)</label><input id="obw" type="number" inputmode="decimal" value="'+esc(d.weight)+'" data-f="weight"></div></div><p class="tiny muted">Elles servent à proposer des charges de départ indicatives et à estimer les calories. Tu ajustes toujours selon tes sensations.</p>'
+     +'<span class="eyebrow">Tu es (facultatif)</span><div class="chips">'+[["f","Femme"],["h","Homme"],["a","Autre"]].map(([v,l])=>'<button class="chip" data-act="sex" data-v="'+v+'" aria-pressed="'+(d.sex===v)+'">'+l+'</button>').join("")+'</div><p class="tiny muted">Pour accorder mes messages et affiner les charges de départ. Tu peux ne rien choisir.</p>'; }
   if (st===3){ body = '<h1>Les zones à cibler</h1><p class="muted">Je les priorise sans négliger le reste du corps.</p>'+chips(ZONES,d.zones,"zones",true); }
   if (st===4){ body = '<h1>Ta salle</h1><p class="muted">Coche uniquement ce qui est disponible chez toi.</p><button class="link" data-act="allequip">Tout sélectionner</button>'+chips(EQUIP,d.equipment,"equipment"); }
   if (st===5){ body = '<h1>Tes disponibilités</h1><p class="muted">Choisis de 2 à 5 jours.</p><div class="chips">'+[1,2,3,4,5,6,0].map(i=>'<button class="chip" data-act="day" data-v="'+i+'" aria-pressed="'+d.days.includes(i)+'">'+DAYS[i]+'</button>').join("")+'</div>'
@@ -1053,7 +1424,7 @@ function viewOnboarding(){
     body = '<div class="row"><img class="face lg pop" src="'+IMG("surprise")+'" alt=""><div><h1>Ton programme est prêt</h1><p class="muted small">'+c.length+' séances par semaine · blocs de 4 semaines</p></div></div><div class="stack">'
       + c.map(t=>{ const o=seen[t]||0; seen[t]=o+1; const s=buildSession(t,{occurrence:o}); return '<div class="card"><div class="row between"><h3>'+esc(s.title)+'</h3><span class="pill num">≈ '+estMinutes(s)+' min</span></div><p class="small muted">'+mainItems(s).map(it=>esc(EX[it.ex].n)).join(" · ")+'</p></div>'; }).join("")
       + '</div><div class="card flat stack"><b>Comment je fais progresser</b><p class="small">Après chaque séance, tu me dis ce que tu as ressenti. Si c\'était faisable, j\'augmente un peu. Si c\'était dur ou douloureux, je n\'augmente pas. Une séance manquée se décale, sans pénalité.</p></div>'
-      + '<div class="card flat stack"><b>Le jeu</b><p class="small">Tu gagnes de l\'XP en t\'entraînant, en remplissant tes retours et en prenant soin de ta récupération. Niveaux, défis, badges et thèmes à débloquer. L\'XP est plafonnée chaque jour : s\'entraîner plus ne rapporte pas plus.</p></div>';
+      + '<div class="card flat stack"><b>Le jeu</b><p class="small">Tu gagnes de l\'XP en t\'entraînant, en remplissant tes retours et en prenant soin de ta récupération. Niveaux, série de semaines, coffres, maîtrise des exercices, records, défis du mois et pass de saison. Malade ou en vacances ? Le mode pause gèle tout. L\'XP est plafonnée chaque jour : s\'entraîner plus ne rapporte pas plus.</p></div>';
     S.profile = prevP || null; if (!prevP) S.program = null;
     nextLabel = S.profile ? "Enregistrer" : "Valider mon programme";
   }
@@ -1089,9 +1460,9 @@ function playerHTML(){
   if (a.step<0){
     const warmN = a.items.filter(it=>it.phase==="warm").length, coolN = a.items.filter(it=>it.phase==="cool").length;
     b = '<div class="coach"><div class="say"><p>'+(a.type==="MOB"||a.type==="STR"?"On prend le temps. Respire, bouge lentement, sans forcer.":"On y va ensemble. On commence par un échauffement guidé, je m'occupe du chrono.")+'</p></div><img src="'+IMG("motivate")+'" alt=""></div>'
-      +'<h1>'+esc(a.title)+'</h1>'
+      +'<h1>'+esc(a.title)+'</h1>'+sessionBrief(a)
       +(warmN?'<div class="card stack"><span class="eyebrow">Échauffement guidé · '+warmN+' mouvements</span><p class="small">'+esc(a.warm)+'</p></div>':'<div class="card stack"><span class="eyebrow">Avant de commencer</span><p class="small">'+esc(a.warm)+'</p></div>')
-      +'<div class="card stack"><span class="eyebrow">Comment tu te sens ? (facultatif)</span><div class="chips">'+[["low","Fatiguée"],["mid","Correcte"],["high","En forme"]].map(([v,l])=>'<button class="chip" data-act="energy" data-v="'+v+'" aria-pressed="'+(a.energy===v)+'">'+l+'</button>').join("")+'</div>'
+      +'<div class="card stack"><span class="eyebrow">Comment tu te sens ? (facultatif)</span><div class="chips">'+[["low",G("Fatiguée","Fatigué","Fatigué·e")],["mid",G("Correcte","Correct","Correct·e")],["high","En forme"]].map(([v,l])=>'<button class="chip" data-act="energy" data-v="'+v+'" aria-pressed="'+(a.energy===v)+'">'+l+'</button>').join("")+'</div>'
       +'<button class="chip" data-act="painstart" aria-pressed="'+a.painStart+'" style="align-self:flex-start">J\'ai une gêne ou une douleur</button>'
       +(a.painStart?'<p class="warnbox">D\'accord. Je n\'augmente rien aujourd\'hui. Évite tout mouvement qui réveille la douleur : tu peux remplacer un exercice à tout moment. Si elle est vive ou persiste, arrête et consulte un professionnel de santé.</p>':'')
       +(a.energy==="low"?'<p class="warnbox">Merci de me le dire. J\'ai retiré une série aux exercices longs, garde de la marge sur les charges.</p>':'')+'</div>'
@@ -1116,11 +1487,12 @@ function playerHTML(){
     const unitLabel = it.unit==="sec" ? "Secondes" : "Reps";
     const ch = view.chrono && view.chrono.step===a.step ? view.chrono : null;
     const nextIdx = a.step+1, nextIsCool = nextIdx<n && a.items[nextIdx].phase==="cool";
-    b = '<div class="stack" style="gap:4px"><span class="eyebrow">'+esc(GROUP_LABEL[e.g])+(it.main?" · repère":"")+'</span><h1 style="font-size:24px">'+esc(e.n)+'</h1>'
+    b = '<div class="stack" style="gap:4px"><span class="eyebrow">'+esc(GROUP_LABEL[e.g])+(it.main?" · repère":"")+'</span><h1 style="font-size:24px">'+esc(e.n)+medal(it.ex,true)+'</h1>'
       +'<p class="small muted">'+(it.unit==="sec"?it.sets.length+" × "+it.lo+" s":it.sets.length+" séries de "+it.lo+(it.hi&&it.hi!==it.lo?" à "+it.hi:"")+" reps")+(it.rest?" · repos "+it.rest+" s":"")+'</p></div>'
-      + tutoHTML(it.ex)
+      + tutoHTML(it.ex) + musclesSVG(it.ex)
       +'<div class="card stack">'+(()=>{ const f = sessionFace(a, it); return '<div class="coachline"><img class="face" src="'+IMG(f.face)+'" alt="CORY, '+esc(FACE_LABEL[resolveFace(f.face)]||"")+'"><span>'+esc(f.text)+'</span></div>'; })()+'<span class="eyebrow">Consignes de CORY</span><ul class="cues small">'+e.c.map(c=>'<li>'+esc(c)+'</li>').join("")+'</ul>'
-      +(e.w ? '<p class="tiny muted">'+(last&&last.next!=null?"Charge proposée d'après ta dernière fois : "+last.next+" kg.":"Première fois : choisis une charge qui te laisse 2 à 3 répétitions en réserve.")+'</p>':'')+'</div>'
+      +(e.w ? '<p class="tiny muted">'+(last&&last.next!=null?"Charge proposée d'après ta dernière fois : "+last.next+" kg.":(startLoad(it.ex)?"Charge de départ indicative : ~"+startLoad(it.ex)+" kg, à ajuster pour garder 2 à 3 répétitions en réserve.":"Première fois : choisis une charge qui te laisse 2 à 3 répétitions en réserve."))+'</p>'+((!last||last.next==null) && startLoad(it.ex) && !it.sets.some(x=>x.weight!=="" && x.weight!=null) ? '<button class="btn sm ghost" data-act="usestart" data-v="'+startLoad(it.ex)+'">Utiliser ~'+startLoad(it.ex)+' kg</button>' : ''):'')
+      +'<a class="btn sm line" href="'+videoURL(it.ex)+'" target="_blank" rel="noopener">Voir une démonstration vidéo</a></div>'
       +'<div class="sets">'+it.sets.map((s,k)=>{
         if (it.unit==="sec") return '<div class="set'+(s.done?" done":"")+'"><span class="n">'+(k+1)+'</span>'
           +(s.done?'<div class="small" style="grid-column:2 / 4;font-weight:700">'+it.lo+' s · fait</div>':'<button class="chrono chr'+(ch&&ch.k===k?" run":"")+'" data-act="chrono" data-k="'+k+'"><span id="chr'+k+'" class="num">'+(ch&&ch.k===k?"":"Démarrer · ")+it.lo+' s</span></button>')
@@ -1239,13 +1611,15 @@ function finishSession(){
   const M = a.items.filter(it=>!it.phase || it.phase==="main");
   const allDone = M.every(it=>it.sets.every(s=>s.done));
   const anyDone = M.some(it=>it.sets.some(s=>s.done));
-  const notes = [];
+  const notes = [], prs = [], mastChecks = [], masteries = []; let prXP = 0;
   M.forEach(it=>{
     const e = EX[it.ex], done = it.sets.filter(s=>s.done); if (!done.length || e.g==="mob" || e.g==="stretch") return;
     const reps = Math.round(done.reduce((x,s)=>x+(+s.reps||0),0)/done.length);
     const w = e.w ? Math.max(...done.map(s=>+s.weight||0)) : null;
     const prev = S.lastByEx[it.ex] || {};
-    const rec = {date:a.date, reps, weight:w, best: Math.max(prev.best||0, w||0) || null, next: w, raised: prev.raised||false};
+    mastChecks.push([it.ex, masteryTier(masteryPoints(it.ex))]);
+    const rec = {date:a.date, reps, weight:w, best: Math.max(prev.best||0, w||0) || null, next: w, raised: prev.raised||false, prs: prev.prs||0};
+    if (e.w && w && prev.best && w > prev.best){ rec.prs++; S.prsTotal=(S.prsTotal||0)+1; (S.prLog=S.prLog||[]).push(a.date); prs.push(e.n+" : "+w+" kg (avant "+prev.best+" kg)"); prXP += award("pr-"+a.id+"-"+it.ex, 25, "Record", false); }
     const hitAll = it.sets.every(s=>s.done && (+s.reps||0) >= (it.unit==="sec"?it.lo:it.lo));
     if (pain) { rec.next = w; }
     else if (hitAll && rpe<=8 && it.unit!=="sec"){
@@ -1262,27 +1636,33 @@ function finishSession(){
   const lvlBefore = levelOf(totalXP());
   const log = {id:a.id, date:a.date, type:a.type, title:a.title, items:a.items.map(it=>({ex:it.ex, sets:it.sets})), duration: Math.max(1,Math.round((Date.now()-a.started)/60000)), completed: allDone || (anyDone && M.filter(it=>it.sets.some(s=>s.done)).length >= Math.ceil(M.length*0.6)), rpe, energy:a.energyEnd||a.energy, pain};
   S.logs.push(log);
-  let xp = 0;
+  let xp = prXP;
+  mastChecks.forEach(([id, before])=>{ const t = masteryTier(masteryPoints(id)); if (t>before && t>=0){ masteries.push(EX[id].n+" : maîtrise "+MASTERY[t][1]); xp += award("ms-"+id+"-"+t, 30, "Maîtrise", false); } });
   if (anyDone){
     if (a.type==="MOB"||a.type==="STR") xp += award("mob-"+a.id, 40, "Récupération", true);
     else xp += award("s-"+a.id, log.completed?100:50, log.completed?"Séance terminée":"Séance partielle", true);
     xp += award("fb-"+a.id, 20, "Retour de séance", false);
   }
   xp += settleChallenges();
+  xp += settleMonth();
+  { const stk = streakInfo().streak; if (stk>=4 && stk%4===0) xp += award("streak-"+stk, 100, "Série de "+stk+" semaines", false); }
   const newBadges = checkBadges();
   const lvlAfter = levelOf(totalXP());
   S.active = null;
-  view.result = {log, xp, notes, newBadges, levelUp: lvlAfter>lvlBefore ? lvlAfter : 0};
+  view.result = {log, xp, notes, newBadges, prs, masteries, levelUp: lvlAfter>lvlBefore ? lvlAfter : 0};
   save(true);
 }
 function resultHTML(){
   const r = view.result; if (!r) return "";
   const l = r.log, sets = l.items.reduce((x,it)=>x+it.sets.filter(s=>s.done).length,0);
   const vol = l.items.reduce((x,it)=>x+it.sets.filter(s=>s.done).reduce((y,s)=>y+(+s.reps||0)*(+s.weight||0),0),0);
-  const face = r.levelUp ? "levelup" : r.newBadges.length ? "surprise" : "congratulate";
+  const face = r.levelUp ? "levelup" : (r.newBadges.length || (r.prs&&r.prs.length)) ? "surprise" : "congratulate";
+  const kc = kcalOf(l);
   return '<div class="player'+(S.settings.reduce?" reduce":"")+'" role="dialog" aria-label="Bilan"><div class="in center" style="padding-top:12px"><img class="face xl pop" src="'+IMG(face)+'" alt="">'
     +'<h1>'+(r.levelUp?"Niveau "+r.levelUp+" atteint !":l.completed?"Bravo, séance terminée !":"Séance enregistrée")+'</h1><p class="muted">'+esc(l.title)+'</p>'
     +'<div class="stats" style="width:100%"><div class="stat"><b class="num">'+l.duration+'</b><span class="tiny muted">minutes</span></div><div class="stat"><b class="num">'+sets+'</b><span class="tiny muted">séries</span></div><div class="stat"><b class="num">'+(vol?Math.round(vol):"–")+'</b><span class="tiny muted">kg soulevés</span></div></div>'
+    +(kc?'<p class="small muted">Environ '+kc+' kcal dépensées (estimation selon ton poids et la durée)</p>':'')
+    +((r.prs&&r.prs.length)||(r.masteries&&r.masteries.length)?'<div class="card stack" style="width:100%;text-align:left">'+(r.prs.length?'<span class="eyebrow">Nouveau record</span>'+r.prs.map(x=>'<p class="small" style="font-weight:700">'+esc(x)+'</p>').join(""):'')+(r.masteries.length?'<span class="eyebrow">Maîtrise débloquée</span>'+r.masteries.map(x=>'<p class="small" style="font-weight:700">'+esc(x)+'</p>').join(""):'')+'</div>':'')
     +(r.levelUp && Object.keys(FACE_UNLOCK).some(k=>FACE_UNLOCK[k]===r.levelUp)?'<div class="card stack" style="width:100%"><span class="eyebrow">CORY se dévoile</span><div class="row" style="justify-content:center;gap:16px">'+Object.keys(FACE_UNLOCK).filter(k=>FACE_UNLOCK[k]===r.levelUp).map(k=>'<div class="stack center" style="gap:4px"><img class="face lg" src="img/'+k+'.webp" alt=""><span class="small" style="font-weight:600">'+FACE_LABEL[k]+'</span></div>').join("")+'</div><p class="small muted">Nouvelles réactions débloquées : tu les verras pendant tes séances.</p></div>':'')
     +(S.settings.game && r.xp?'<div class="card" style="width:100%"><b class="num" style="font:800 26px var(--display);color:var(--accent)">+'+r.xp+' XP</b>'+(r.newBadges.length?'<p class="small">Nouveau badge : '+r.newBadges.map(id=>esc(BADGES.find(b=>b.id===id).n)).join(", ")+'</p>':'')+'</div>':'')
     +'<div class="card stack" style="width:100%;text-align:left"><span class="eyebrow">Ce que j\'ajuste pour la suite</span>'+r.notes.map(n=>'<p class="small">'+esc(n)+'</p>').join("")+'</div>'
@@ -1306,8 +1686,10 @@ function renderLayer(){
   if (view.breath) h = breathHTML();
   else if (view.result) h = resultHTML();
   else if (view.player && S.active) h = playerHTML() + restHTML();
-  if (sheet && sheet.tuto){ const e = EX[sheet.tuto]; h += '<div class="sheet" data-act="closesheet"><div class="panel" data-stop="1"><span class="eyebrow">'+esc(GROUP_LABEL[e.g])+'</span><h2>'+esc(e.n)+'</h2>'+tutoHTML(e.id)+'<ul class="cues small">'+e.c.map(c=>'<li>'+esc(c)+'</li>').join("")+'</ul>'+(e.e&&e.e.length?'<p class="tiny muted">Matériel : '+esc(e.e.map(q=>EQUIP_LABEL[q]).join(" + "))+'</p>':'')+'<button class="btn ghost" data-act="closesheet">Fermer</button></div></div>'; }
+  if (sheet && sheet.tuto){ const e = EX[sheet.tuto]; h += '<div class="sheet" data-act="closesheet"><div class="panel" data-stop="1"><span class="eyebrow">'+esc(GROUP_LABEL[e.g])+'</span><h2>'+esc(e.n)+medal(e.id)+'</h2>'+tutoHTML(e.id)+tutoExtras(e.id)+(e.e&&e.e.length?'<p class="tiny muted">Matériel : '+esc(e.e.map(q=>EQUIP_LABEL[q]).join(" + "))+'</p>':'')+'<button class="btn ghost" data-act="closesheet">Fermer</button></div></div>'; }
   if (sheet==="swap" && S.active) h += swapSheet();
+  if (sheet==="break") h += breakSheet();
+  if (sheet && sheet.chest) h += chestSheet(sheet.chest);
   if (sheet==="pause" && S.active) h += pauseSheet();
   if (sheet==="export") h += '<div class="sheet" data-act="closesheet"><div class="panel" data-stop="1"><h2>Mes données</h2><p class="small muted">Copie ce texte pour le garder ou le transférer sur un autre appareil.</p><textarea id="exp" readonly>'+esc(JSON.stringify(S))+'</textarea><button class="btn" data-act="copy">Copier</button><button class="btn ghost" data-act="closesheet">Fermer</button></div></div>';
   if (sheet==="import") h += '<div class="sheet" data-act="closesheet"><div class="panel" data-stop="1"><h2>Importer des données</h2><p class="small muted">Colle ici le texte copié depuis CORY. Il remplacera les données actuelles.</p><textarea id="imp"></textarea><button class="btn" data-act="doimport">Importer</button><button class="btn ghost" data-act="closesheet">Annuler</button></div></div>';
@@ -1328,6 +1710,13 @@ document.addEventListener("click", ev=>{
   switch(act){
     case "tuto": sheet={tuto:v}; renderLayer(); break;
     case "chrono": startChrono(+el.dataset.k); break;
+    case "usestart": { const it=S.active.items[S.active.step]; it.sets.forEach(x=>{ if(!x.done) x.weight=+v; }); save(); renderLayer(); } break;
+    case "chest": { const r = openChest(v); sheet={chest:r}; render(); } break;
+    case "equip": { const [t,id] = v.split(":"); S.settings[t] = S.settings[t]===id ? null : id; save(); render(); } break;
+    case "sex": { const dd=obDraft(); dd.sex = dd.sex===v ? null : v; render(); } break;
+    case "breakopen": sheet="break"; renderLayer(); break;
+    case "dobreak": startBreak(v); sheet=null; render(); toast("Mode pause activé : ta progression est gelée"); break;
+    case "endbreak": { const msg = endBreak(); render(); toast(msg); } break;
     case "kgstep": { const it=a.items[a.step], k=+el.dataset.k, e=EX[it.ex]; const inc = e.e.includes("halteres") && !e.e.includes("machines") ? 1 : 2.5;
       const cur = parseFloat(it.sets[k].weight)||0; const nv = Math.max(0, Math.round((cur + inc*(+v))*2)/2);
       for (let j=k;j<it.sets.length;j++){ if (j===k || !it.sets[j].done){ it.sets[j].weight = nv; const o=$("#w"+j); if (o) o.value = nv; } if (j===k) continue; }
